@@ -1,13 +1,18 @@
 #whiteboard {
-    margin-top: 0em!important;
-    margin-left: 0em!important;
-    margin-right: 0em!important;
+  margin-top: 0em !important;
+  margin-left: 0em !important;
+  margin-right: 0em !important;
 }
 #chatbox {
-    margin-top: 0em!important;
-    margin-left: 0em!important;
-    margin-right: 0em!important;
+  margin-top: 0em !important;
+  margin-left: 0em !important;
+  margin-right: 0em !important;
 }
 #canvas {
-    margin-top: 0em!important;
+  margin-top: 0em !important;
+}
+
+.home-screen-image {
+  border: 1rem;
+  border-radius: 1rem;
 }
