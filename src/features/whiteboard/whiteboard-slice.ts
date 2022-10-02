@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface WhiteBoardState {
   status: WhiteBoardStatus;
@@ -14,7 +14,7 @@ const whiteboardSlice = createSlice({
   name: "whiteboard",
   initialState,
   reducers: {
-    changeStatus(state, action) {
+    changeStatus(state, action: PayloadAction<WhiteBoardStatus>) {
       state.status = action.payload;
     },
   },
