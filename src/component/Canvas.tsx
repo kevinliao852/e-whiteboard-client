@@ -1,6 +1,11 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { Label } from "semantic-ui-react";
+import { useAppDispatch, useAppSelecter } from "../app/hooks";
 import "../css/style.css";
+import {
+  changeStatus,
+  WhiteBoardStatus,
+} from "../features/whiteboard/whiteboard-slice";
 interface DrawingLineData {
   start: Array<number>;
   end: Array<number>;
@@ -11,27 +16,39 @@ export const Canvas = (): JSX.Element => {
   const [data, setData] = useState<DrawingLineData>();
   const [socket, setSocket] = useState<WebSocket>();
   const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
-  const [status, setStatus] = useState<"red" | "green">("red");
+  const dispatch = useAppDispatch();
 
-  useEffect(function initWebsocketAndCanvas() {
-    if (!canvasRef || !canvasRef.current) {
-      return;
-    }
-    const host = process.env.REACT_APP_WEBSOCKET_DRAW_HOST as string;
-    const sockInstance = new WebSocket(host);
-    sockInstance.onerror = (event) => {
-      setStatus("red");
-      setSocket(new WebSocket(host));
-    };
-    sockInstance.onopen = function (event) {
-      setStatus("green");
-    };
-    sockInstance.onclose = function (event) {
-      setStatus("red");
-    };
-    setCtx(canvasRef.current.getContext("2d"));
-    setSocket(sockInstance);
-  }, []);
+  const setStatus = useCallback(
+    function (status: WhiteBoardStatus) {
+      dispatch(changeStatus(status));
+    },
+    [dispatch]
+  );
+
+  const status = useAppSelecter((state) => state.whiteboard.status);
+
+  useEffect(
+    function initWebsocketAndCanvas() {
+      if (!canvasRef || !canvasRef.current) {
+        return;
+      }
+      const host = process.env.REACT_APP_WEBSOCKET_DRAW_HOST as string;
+      const sockInstance = new WebSocket(host);
+      sockInstance.onerror = (event) => {
+        setStatus("disconnected");
+        setSocket(new WebSocket(host));
+      };
+      sockInstance.onopen = function (event) {
+        setStatus("connected");
+      };
+      sockInstance.onclose = function (event) {
+        setStatus("disconnected");
+      };
+      setCtx(canvasRef.current.getContext("2d"));
+      setSocket(sockInstance);
+    },
+    [setStatus]
+  );
 
   useEffect(
     function syncDrawingData() {
@@ -111,8 +128,8 @@ export const Canvas = (): JSX.Element => {
 
   return (
     <>
-      <Label color={status} attached="top">
-        {status === "red" ? "Error" : "Connected"}
+      <Label color={status === "disconnected" ? "red" : "green"} attached="top">
+        {status === "disconnected" ? "Error" : "Connected"}
       </Label>
       <canvas
         ref={canvasRef}
