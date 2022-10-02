@@ -4,7 +4,7 @@ interface WhiteBoardState {
   status: WhiteBoardStatus;
 }
 
-type WhiteBoardStatus = "connecting" | "connected" | "disconnected";
+export type WhiteBoardStatus = "connecting" | "connected" | "disconnected";
 
 const initialState: WhiteBoardState = {
   status: "disconnected",
