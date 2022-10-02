@@ -1,9 +1,9 @@
-import { useContext } from 'react';
-import { Route, BrowserRouter } from 'react-router-dom';
-import { Header } from '../component/Header';
-import { GoogleAuthContext } from '../contexts/GoogleAuthContext';
-import { Dashboard } from './Dashboard';
-import { Home } from './Home';
+import { useContext } from "react";
+import { Route, BrowserRouter } from "react-router-dom";
+import { Header } from "../component/Header";
+import { GoogleAuthContext } from "../contexts/GoogleAuthContext";
+import { Dashboard } from "./Dashboard";
+import { Home } from "./Home";
 
 export const Routes = () => {
   const { isSignedIn } = useContext(GoogleAuthContext);
