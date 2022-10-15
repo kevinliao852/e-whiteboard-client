@@ -1,81 +1,59 @@
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import { Label } from "semantic-ui-react";
-import { useAppDispatch, useAppSelecter } from "../app/hooks";
+import { useAppSelecter } from "../app/hooks";
 import "../css/style.css";
-import {
-  changeStatus,
-  WhiteBoardStatus,
-} from "../features/whiteboard/whiteboard-slice";
-interface DrawingLineData {
+import { useWhiteboardWebSocket } from "../hooks/useWhiteboard";
+
+type DrawingLineData = {
   start: Array<number>;
   end: Array<number>;
-}
+};
 
 export const Canvas = (): JSX.Element => {
+  const { wsRef } = useWhiteboardWebSocket();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [data, setData] = useState<DrawingLineData>();
-  const [socket, setSocket] = useState<WebSocket>();
-  const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
-  const dispatch = useAppDispatch();
-
-  const setStatus = useCallback(
-    function (status: WhiteBoardStatus) {
-      dispatch(changeStatus(status));
-    },
-    [dispatch]
-  );
-
   const status = useAppSelecter((state) => state.whiteboard.status);
-
-  useEffect(
-    function initWebsocketAndCanvas() {
-      if (!canvasRef || !canvasRef.current) {
+  const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
+  const sendDrawingData = useCallback(
+    function (data: DrawingLineData) {
+      if (!wsRef.current) {
         return;
       }
-      const host = process.env.REACT_APP_WEBSOCKET_DRAW_HOST as string;
-      const sockInstance = new WebSocket(host);
-      sockInstance.onerror = (event) => {
-        setStatus("disconnected");
-        setSocket(new WebSocket(host));
-      };
-      sockInstance.onopen = function (event) {
-        setStatus("connected");
-      };
-      sockInstance.onclose = function (event) {
-        setStatus("disconnected");
-      };
-      setCtx(canvasRef.current.getContext("2d"));
-      setSocket(sockInstance);
+
+      const ws = wsRef.current;
+
+      if (ws.readyState === ws.OPEN && data) {
+        ws.send(JSON.stringify(data));
+      }
     },
-    [setStatus]
+    [wsRef]
   );
+
+  useEffect(() => {
+    console.log("here", canvasRef);
+    if (!canvasRef.current) {
+      return;
+    }
+    setCtx(canvasRef.current?.getContext("2d"));
+  }, []);
 
   useEffect(
     function syncDrawingData() {
-      if (!socket) return;
-
-      socket.onmessage = function (event: MessageEvent) {
+      const onmessage = function (event: CustomEvent) {
         if (!ctx) return;
-        if (!event?.data) return;
+        if (!event?.detail?.data) return;
 
-        const line = JSON.parse(event.data);
+        const line = JSON.parse(event.detail.data);
 
         const { start, end } = line;
         ctx.moveTo(start[0], start[1]);
         ctx.lineTo(end[0], end[1]);
         ctx.stroke();
-      };
-    },
-    [socket, ctx]
-  );
+      } as EventListener;
 
-  useEffect(
-    function sendDrawingData() {
-      if (socket?.readyState === 1 && data) {
-        socket.send(JSON.stringify(data));
-      }
+      window.addEventListener("whiteboard-ws-onmessage", onmessage);
     },
-    [data, socket]
+    [ctx]
   );
 
   useEffect(
@@ -109,7 +87,7 @@ export const Canvas = (): JSX.Element => {
           start: [lastX, lastY],
           end: [e.offsetX, e.offsetY],
         };
-        setData(drawingContent);
+        sendDrawingData(drawingContent);
 
         [lastX, lastY] = [e.offsetX, e.offsetY];
       }
@@ -123,7 +101,7 @@ export const Canvas = (): JSX.Element => {
       canvasRef.current.addEventListener("mouseup", () => (isDrawing = false));
       canvasRef.current.addEventListener("mouseout", () => (isDrawing = false));
     },
-    [ctx]
+    [ctx, sendDrawingData]
   );
 
   return (
@@ -134,8 +112,6 @@ export const Canvas = (): JSX.Element => {
       <canvas
         ref={canvasRef}
         id="canvas"
-        width="100%"
-        height="100%"
         style={{ border: "solid 2px red" }}
       ></canvas>
     </>
