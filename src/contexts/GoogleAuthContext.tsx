@@ -1,5 +1,5 @@
-import axios from 'axios';
-import React, { useEffect, useState, useMemo } from 'react';
+import axios from "axios";
+import React, { useEffect, useState, useMemo } from "react";
 
 export const GoogleAuthContext = React.createContext({} as any);
 
@@ -8,11 +8,11 @@ export const GoogleAuthContextStore = (props: any) => {
   const [, setLoading] = useState<Boolean>(false);
 
   useEffect(() => {
-    gapi.load('auth2', () => {
+    gapi.load("auth2", () => {
       const client_id = process.env.REACT_APP_GOOGLE_CLIENT_ID!;
       gapi.auth2.init({ client_id });
       console.log(gapi.auth2);
-      console.log('gapi init');
+      console.log("gapi init");
       setLoading(true);
     });
   }, []);
@@ -32,7 +32,7 @@ export const GoogleAuthContextStore = (props: any) => {
 
       axios
         .post(`${host}/login`, `idtoken=${idToken}`, {
-          headers: { 'Access-Control-Allow-Credentials': true },
+          headers: { "Access-Control-Allow-Credentials": true },
           withCredentials: true,
         })
         .then(console.log)
