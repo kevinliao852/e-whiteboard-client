@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 
 export const GoogleAuthContext = React.createContext({} as any);
 
