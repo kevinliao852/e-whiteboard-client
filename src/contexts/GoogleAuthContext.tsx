@@ -1,6 +1,9 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 
+const client_id = process.env.REACT_APP_GOOGLE_CLIENT_ID!;
+const host = process.env.REACT_APP_API_SERVER_HOST!;
+
 export const GoogleAuthContext = React.createContext({} as any);
 
 export const GoogleAuthContextStore = (props: any) => {
@@ -9,7 +12,6 @@ export const GoogleAuthContextStore = (props: any) => {
 
   useEffect(() => {
     gapi.load("auth2", () => {
-      const client_id = process.env.REACT_APP_GOOGLE_CLIENT_ID!;
       gapi.auth2.init({ client_id });
       console.log(gapi.auth2);
       console.log("gapi init");
@@ -24,7 +26,6 @@ export const GoogleAuthContextStore = (props: any) => {
     gapi.auth2.getAuthInstance().isSignedIn.listen((signedIn) => {
       console.log(signedIn);
       setIsSignedIn((prev) => signedIn);
-      const host = process.env.REACT_APP_API_SERVER_HOST!;
       const idToken = gapi.auth2
         .getAuthInstance()
         .currentUser.get()
