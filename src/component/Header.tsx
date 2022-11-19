@@ -4,14 +4,21 @@ import { useContext } from "react";
 import { GoogleAuthContext } from "../contexts/GoogleAuthContext";
 
 export const Header = () => {
-  const { isSignedIn, signIn, signOut } = useContext(GoogleAuthContext);
-  console.log(isSignedIn);
+  const path = useParams();
+  const googleAuth = useContext(GoogleAuthContext);
+
+  if (!googleAuth) {
+    return null;
+  }
+
+  const { isSignedIn, signOut, signIn } = googleAuth;
+
   return (
     <Menu>
-      <Menu.Item active={useParams() === "home"}>
+      <Menu.Item active={path === "home"}>
         <Link to="/home">Home</Link>
       </Menu.Item>
-      <Menu.Item active={useParams() === "dashboard"}>
+      <Menu.Item active={path === "dashboard"}>
         <Link to="/dashboard">Dashboard</Link>
       </Menu.Item>
       <Menu.Item position="right">
