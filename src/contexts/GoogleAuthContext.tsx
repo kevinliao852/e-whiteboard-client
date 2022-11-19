@@ -23,7 +23,7 @@ export const GoogleAuthContextStore = (props: any) => {
     }
     gapi.auth2.getAuthInstance().isSignedIn.listen((signedIn) => {
       console.log(signedIn);
-      setIsSignedIn((prev) => signedIn);
+      setIsSignedIn(signedIn);
       const idToken = gapi.auth2
         .getAuthInstance()
         .currentUser.get()
@@ -54,7 +54,7 @@ export const GoogleAuthContextStore = (props: any) => {
 
   const signOut = () => {
     gapi.auth2.getAuthInstance().signOut();
-    setIsSignedIn((prev) => false);
+    setIsSignedIn(false);
   };
 
   const valueProvider = { isSignedIn, signOut, signIn };
