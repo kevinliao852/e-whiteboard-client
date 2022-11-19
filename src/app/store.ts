@@ -7,6 +7,7 @@ export const store = configureStore({
     whiteboard: whiteboardReducer,
     auth: authReducer,
   },
+	devTools: true
 });
 
 export type AppDispatch = typeof store.dispatch;
