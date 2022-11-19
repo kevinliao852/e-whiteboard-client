@@ -8,14 +8,12 @@ export const GoogleAuthContext = React.createContext({} as any);
 
 export const GoogleAuthContextStore = (props: any) => {
   const [isSignedIn, setIsSignedIn] = useState<Boolean>(false);
-  const [, setLoading] = useState<Boolean>(false);
 
   useEffect(() => {
     gapi.load("auth2", () => {
       gapi.auth2.init({ client_id });
       console.log(gapi.auth2);
       console.log("gapi init");
-      setLoading(true);
     });
   }, []);
 
