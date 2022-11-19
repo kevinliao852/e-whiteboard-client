@@ -1,5 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState, useCallback } from "react";
+import { useAppDispatch } from "../app/hooks";
+import { AuthStatus, changeAuthStatus } from "../features/auth/auth-slice";
 
 const client_id = process.env.REACT_APP_GOOGLE_CLIENT_ID!;
 const host = process.env.REACT_APP_API_SERVER_HOST!;
@@ -15,6 +17,7 @@ export const GoogleAuthContext =
 
 export const GoogleAuthContextStore = (props: any) => {
   const [isSignedIn, setIsSignedIn] = useState<Boolean>(false);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     gapi.load("auth2", () => {
@@ -32,11 +35,13 @@ export const GoogleAuthContextStore = (props: any) => {
             headers: { "Access-Control-Allow-Credentials": true },
             withCredentials: true,
           })
-          .then(console.log)
+          .then(() => {
+            dispatch(changeAuthStatus(AuthStatus.Login));
+          })
           .catch(console.log);
       });
     });
-  }, []);
+  }, [dispatch]);
 
   const signIn = useCallback(() => {
     console.log(gapi.auth2.getAuthInstance().signIn());
@@ -44,8 +49,9 @@ export const GoogleAuthContextStore = (props: any) => {
 
   const signOut = useCallback(() => {
     gapi.auth2.getAuthInstance().signOut();
+    dispatch(changeAuthStatus(AuthStatus.Logout));
     setIsSignedIn(false);
-  }, []);
+  }, [dispatch]);
 
   const value = { isSignedIn, signOut, signIn };
 
