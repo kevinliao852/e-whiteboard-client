@@ -1,21 +1,13 @@
-import { FC, useEffect } from "react";
-import { useHistory } from "react-router";
+import { FC } from "react";
+import { Redirect, Route, RouteProps } from "react-router";
 import { AuthStatus } from "../features/auth/auth-slice";
-import { useAuthStatus } from "../hooks/useAuth";
 
-export const ProtectRoute: FC = (props) => {
-  const authStatus = useAuthStatus();
-  const history = useHistory();
-
-  useEffect(() => {
-    if (authStatus !== AuthStatus.Login) {
-      history.push("/home");
-    }
-  }, [authStatus, history]);
-
-  if (authStatus !== AuthStatus.Login) {
-    return null;
+export const ProtectRoute: FC<RouteProps & { authStatus: AuthStatus }> = (
+  props
+) => {
+  if (props.authStatus !== AuthStatus.Login) {
+    return <Redirect to="home" />;
   }
 
-  return <>{props.children}</>;
+  return <Route {...props} />;
 };
