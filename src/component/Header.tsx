@@ -21,6 +21,9 @@ export const Header = () => {
       <Menu.Item active={path === "dashboard"}>
         <Link to="/dashboard">Dashboard</Link>
       </Menu.Item>
+      <Menu.Item active={path === "whiteboardlist"}>
+        <Link to="/whiteboardlist">WhiteboardList</Link>
+      </Menu.Item>
       <Menu.Item position="right">
         <button
           className="ui button"
