@@ -1,7 +1,7 @@
 import React from "react";
 
 import { Segment, Image, Container } from "semantic-ui-react";
-import "../css/style.css";
+import "../../css/style.css";
 export const Home = () => {
   return (
     <div className="ui raised very padded text container segment">

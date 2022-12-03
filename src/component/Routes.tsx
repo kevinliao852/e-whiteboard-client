@@ -1,10 +1,10 @@
 import { Route, BrowserRouter } from "react-router-dom";
-import { Header } from "../component/Header";
+import { Header } from "./common/Header";
 import { useAuthStatus } from "../hooks/useAuth";
-import { Dashboard } from "./Dashboard";
-import { Home } from "./Home";
-import { ProtectRoute } from "./ProtectRoute";
-import { WhiteboardList } from "./WhiteboardList";
+import { Dashboard } from "./whiteboard/Dashboard";
+import { Home } from "./home/Home";
+import { ProtectRoute } from "./common//ProtectRoute";
+import { WhiteboardList } from "./whiteboardlist/WhiteboardList";
 
 export const Routes = () => {
   const authStatus = useAuthStatus();

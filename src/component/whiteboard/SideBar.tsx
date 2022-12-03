@@ -12,7 +12,7 @@ import {
   Container,
 } from "semantic-ui-react";
 
-import "../css/style.css";
+import "../../css/style.css";
 
 const SideBar = (props: { children: Array<JSX.Element> }) => {
   const [visible, setVisible] = React.useState(false);

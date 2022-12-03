@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { Redirect, Route, RouteProps } from "react-router";
-import { AuthStatus } from "../features/auth/auth-slice";
+import { AuthStatus } from "../../features/auth/auth-slice";
 
 export const ProtectRoute: FC<RouteProps & { authStatus: AuthStatus }> = (
   props

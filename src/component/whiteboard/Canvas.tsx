@@ -1,8 +1,8 @@
 import { useRef, useEffect, useCallback, useState } from "react";
 import { Label } from "semantic-ui-react";
-import { useAppSelecter } from "../app/hooks";
-import "../css/style.css";
-import { useWhiteboardWebSocket } from "../hooks/useWhiteboard";
+import { useAppSelecter } from "../../app/hooks";
+import "../../css/style.css";
+import { useWhiteboardWebSocket } from "../../hooks/useWhiteboard";
 
 type DrawingLineData = {
   start: Array<number>;

@@ -1,9 +1,9 @@
 import { emit } from "process";
 import { FC } from "react";
 import styled from "styled-components";
-import { Button } from "./common/Button";
-import { Container } from "./common/Container";
-import { FlexDiv } from "./common/FlexDiv";
+import { Button } from "../common/Button";
+import { Container } from "../common/Container";
+import { FlexDiv } from "../common/FlexDiv";
 
 interface WhiteboardListProps {}
 
