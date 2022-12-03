@@ -2,9 +2,10 @@ import axios from "axios";
 import React, { useEffect, useState, useCallback } from "react";
 import { useAppDispatch } from "../app/hooks";
 import { AuthStatus, changeAuthStatus } from "../features/auth/auth-slice";
+import { GOOGLE_CLIENT_ID, API_SERVER_HOST } from "../config/config";
 
-const client_id = process.env.REACT_APP_GOOGLE_CLIENT_ID!;
-const host = process.env.REACT_APP_API_SERVER_HOST!;
+const client_id = GOOGLE_CLIENT_ID;
+const host = API_SERVER_HOST;
 
 type GoogleAuthContextType = {
   isSignedIn: Boolean;
