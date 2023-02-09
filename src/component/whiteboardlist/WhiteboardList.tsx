@@ -1,23 +1,34 @@
-import { emit } from "process";
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import styled from "styled-components";
+import { useAppSelecter } from "../../app/hooks";
+import { API_SERVER_HOST } from "../../config/config";
+import { selectUserId } from "../../features/user/user-slice";
 import { Button } from "../common/Button";
 import { Container } from "../common/Container";
 import { FlexDiv } from "../common/FlexDiv";
 
 interface WhiteboardListProps {}
 
+interface Whiteboard {
+  id: string;
+  name: string;
+}
+
 export const WhiteboardList: FC<WhiteboardListProps> = () => {
-  const whiteboards = [
-    { id: 0, name: "whiteboar01" },
-    { id: 1, name: "whiteboard02" },
-  ];
+  const userId = useAppSelecter(selectUserId);
+  const [list, setList] = useState<Whiteboard[]>([]);
+
+  useEffect(() => {
+    fetch(`${API_SERVER_HOST}/v1/whiteboards?user-id=${userId}`)
+      .then((resposne) => resposne.json())
+      .then(setList);
+  }, [userId]);
 
   return (
     <Container>
       <Button>create a new whiteboard</Button>
       <div>
-        {whiteboards.map((whiteboard) => (
+        {list.map((whiteboard) => (
           <WhiteboardRow key={whiteboard.id}>
             <div>{whiteboard.id}</div>
             <div>{whiteboard.name}</div>
