@@ -24,6 +24,9 @@ const authSlice = createSlice({
     changeAuthStatus(state, action: PayloadAction<authStatus>) {
       state.status = action.payload;
     },
+    setAuthData(state, action: PayloadAction<authStatus>) {
+      state.status = action.payload;
+    },
   },
 });
 
