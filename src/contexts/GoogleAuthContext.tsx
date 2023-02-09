@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useAppDispatch } from "../app/hooks";
 import { AuthStatus, changeAuthStatus } from "../features/auth/auth-slice";
 import { GOOGLE_CLIENT_ID, API_SERVER_HOST } from "../config/config";
+import { setUserInfo, UserInfo } from "../features/user/user-slice";
 
 const client_id = GOOGLE_CLIENT_ID;
 const host = API_SERVER_HOST;
@@ -36,8 +37,18 @@ export const GoogleAuthContextStore = (props: any) => {
             headers: { "Access-Control-Allow-Credentials": true },
             withCredentials: true,
           })
-          .then(() => {
+          .then((response) => {
+            const data = response.data;
+
+            const userInfo: UserInfo = {
+              id: data.id,
+              displayName: data["display-name"],
+              email: data.email,
+            };
+
+            console.log(response);
             dispatch(changeAuthStatus(AuthStatus.Login));
+            dispatch(setUserInfo(userInfo));
           })
           .catch(console.log);
       });
