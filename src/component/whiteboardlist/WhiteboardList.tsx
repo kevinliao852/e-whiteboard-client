@@ -82,6 +82,10 @@ export const WhiteboardList: FC<WhiteboardListProps> = () => {
     getWhiteboardList(userId.toString()).then(setList);
   }, [userId]);
 
+  if (userId == null) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <Container>
       <Button>create a new whiteboard</Button>
