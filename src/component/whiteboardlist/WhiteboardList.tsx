@@ -14,14 +14,20 @@ interface Whiteboard {
   name: string;
 }
 
+function getWhiteboardList(userId: string) {
+  return fetch(`${API_SERVER_HOST}/v1/whiteboards?user-id=${userId}`).then(
+    (resposne) => resposne.json()
+  );
+}
+
 export const WhiteboardList: FC<WhiteboardListProps> = () => {
   const userId = useAppSelecter(selectUserId);
   const [list, setList] = useState<Whiteboard[]>([]);
 
   useEffect(() => {
-    fetch(`${API_SERVER_HOST}/v1/whiteboards?user-id=${userId}`)
-      .then((resposne) => resposne.json())
-      .then(setList);
+    if (!userId) return;
+
+    getWhiteboardList(userId.toString()).then(setList);
   }, [userId]);
 
   return (
