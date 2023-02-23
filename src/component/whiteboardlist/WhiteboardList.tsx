@@ -35,6 +35,43 @@ function getWhiteboardList(userId: string) {
   );
 }
 
+function WhiteboardModal({
+  setList,
+  setIsModalOpen,
+  userId,
+}: {
+  setList: any;
+  userId: number;
+  setIsModalOpen: any;
+}) {
+  const [name, setName] = useState("");
+
+  return (
+    <div>
+      <WhiteboardModalBox>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <Button
+          onClick={() => {
+            createWhiteboard({
+              userId,
+              name,
+            }).then(() => {
+              getWhiteboardList(userId.toString()).then(setList);
+            });
+            setIsModalOpen(false);
+          }}
+        >
+          create
+        </Button>
+      </WhiteboardModalBox>
+    </div>
+  );
+}
+
 export const WhiteboardList: FC<WhiteboardListProps> = () => {
   const userId = useAppSelecter(selectUserId);
   const [list, setList] = useState<Whiteboard[]>([]);
@@ -73,3 +110,13 @@ const WhiteboardRow = styled(FlexDiv)`
 `;
 
 const WhiteboardCell = styled.div``;
+
+const WhiteboardModalBox = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  background-color: grey;
+  padding: 3rem;
+`;
