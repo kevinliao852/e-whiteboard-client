@@ -75,6 +75,7 @@ function WhiteboardModal({
 export const WhiteboardList: FC<WhiteboardListProps> = () => {
   const userId = useAppSelecter(selectUserId);
   const [list, setList] = useState<Whiteboard[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -88,7 +89,16 @@ export const WhiteboardList: FC<WhiteboardListProps> = () => {
 
   return (
     <Container>
-      <Button>create a new whiteboard</Button>
+      <Button onClick={() => setIsModalOpen(true)}>
+        create a new whiteboard
+      </Button>
+      {isModalOpen && (
+        <WhiteboardModal
+          userId={userId}
+          setList={setList}
+          setIsModalOpen={setIsModalOpen}
+        />
+      )}
       <div>
         {list.map((whiteboard) => (
           <WhiteboardRow key={whiteboard.id}>
