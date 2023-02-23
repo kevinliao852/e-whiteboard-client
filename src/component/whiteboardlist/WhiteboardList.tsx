@@ -14,6 +14,21 @@ interface Whiteboard {
   name: string;
 }
 
+function deleteWhiteboard(id: string) {
+  return fetch(`${API_SERVER_HOST}/v1/whiteboards/${id}`, {
+    method: "DELETE",
+  });
+}
+
+function createWhiteboard(whiteboardData: { name: string; userId: number }) {
+  const { name, userId } = whiteboardData;
+
+  return fetch(`${API_SERVER_HOST}/v1/whiteboards`, {
+    method: "POST",
+    body: JSON.stringify({ "user-id": userId, name }),
+  });
+}
+
 function getWhiteboardList(userId: string) {
   return fetch(`${API_SERVER_HOST}/v1/whiteboards?user-id=${userId}`).then(
     (resposne) => resposne.json()
