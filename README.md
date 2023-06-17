@@ -1,4 +1,8 @@
-# Online Whiteboard
+# e-whiteboard-client
+
+A front-end of an Online whiteboard
+
+![Image](https://i.imgur.com/XV8RHdK.gif)
 
 ## Prerequisite
 
@@ -22,5 +26,14 @@ It correctly bundles React in production mode and optimizes the build for the be
 ## Note 
 
 This project is based on create-react-app.
+
+## Source code
+
+The project source code is spread across a number of repos:
+
+| Name                         | Repo Address                                               |
+|:-----------------------------|:-----------------------------------------------------------|
+| e-whiteboard-server          | https://github.com/kevinliao852/e-whiteboard-server        |
+| e-whiteboard-client          | https://github.com/kevinliao852/e-whiteboard-client        |
 
 
