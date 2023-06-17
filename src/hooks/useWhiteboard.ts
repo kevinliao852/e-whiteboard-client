@@ -33,8 +33,10 @@ function useStatusChecker() {
   }, [setStatus]);
 }
 
-function whiteboardWebSocket() {
-  const ws = new WebSocket(process.env.REACT_APP_WEBSOCKET_DRAW_HOST!);
+function whiteboardWebSocket(id: string) {
+  const ws = new WebSocket(
+    process.env.REACT_APP_WEBSOCKET_DRAW_HOST! + `/${id}`
+  );
 
   ws.onerror = (event: Event) => {
     const customEvent = new CustomEvent("whiteboard-ws-onerror", {
@@ -67,12 +69,12 @@ function whiteboardWebSocket() {
   return ws;
 }
 
-export function useWhiteboardWebSocket() {
-	const _ = useStatusChecker()
+export function useWhiteboardWebSocket(id: string) {
+  const _ = useStatusChecker();
   const wsRef = useRef<WebSocket>();
 
   useEffect(() => {
-    wsRef.current = whiteboardWebSocket();
+    wsRef.current = whiteboardWebSocket(id);
 
     return () => {
       if (wsRef.current) {

@@ -1,4 +1,5 @@
 import { useRef, useEffect, useCallback, useState } from "react";
+import { useParams } from "react-router";
 import { Label } from "semantic-ui-react";
 import { useAppSelecter } from "../../app/hooks";
 import "../../css/style.css";
@@ -10,7 +11,8 @@ type DrawingLineData = {
 };
 
 export const Canvas = (): JSX.Element => {
-  const { wsRef } = useWhiteboardWebSocket();
+  const id = useParams<{ id: string }>().id;
+  const { wsRef } = useWhiteboardWebSocket(id);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const status = useAppSelecter((state) => state.whiteboard.status);
   const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);

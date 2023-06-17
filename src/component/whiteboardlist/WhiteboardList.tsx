@@ -1,4 +1,5 @@
 import { FC, useEffect, useState } from "react";
+import { useHistory } from "react-router";
 import styled from "styled-components";
 import { useAppSelecter } from "../../app/hooks";
 import { API_SERVER_HOST } from "../../config/config";
@@ -76,6 +77,7 @@ export const WhiteboardList: FC<WhiteboardListProps> = () => {
   const userId = useAppSelecter(selectUserId);
   const [list, setList] = useState<Whiteboard[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const history = useHistory();
 
   useEffect(() => {
     if (!userId) return;
@@ -85,6 +87,10 @@ export const WhiteboardList: FC<WhiteboardListProps> = () => {
 
   if (userId == null) {
     return <div>Loading...</div>;
+  }
+
+  function go2Whiteboard(id: string) {
+    history.push(`/whiteboards/${id}`);
   }
 
   return (
@@ -104,6 +110,14 @@ export const WhiteboardList: FC<WhiteboardListProps> = () => {
           <WhiteboardRow key={whiteboard.id}>
             <div>{whiteboard.id}</div>
             <div>{whiteboard.name}</div>
+            <div>
+              <Button onClick={() => go2Whiteboard(whiteboard.id)}>
+                Go to whiteboard
+              </Button>
+            </div>
+            <div>
+              <Button>Edit</Button>
+            </div>
             <div>
               <Button>delete</Button>
             </div>

@@ -26,6 +26,11 @@ export const Routes = () => {
         component={Dashboard}
         authStatus={authStatus}
       />
+      <ProtectRoute
+        path="/whiteboards/:id"
+        component={Dashboard}
+        authStatus={authStatus}
+      />
     </BrowserRouter>
   );
 };
