@@ -27,18 +27,18 @@ const SideBar = (props: { children: Array<JSX.Element> }) => {
     <Grid columns={1}>
       <Grid.Column>
         <div>
-          <Label as="button" color="teal" image onClick={buttonOnClick}>
+          <Label as="button" color="black" image onClick={buttonOnClick}>
             <Label.Detail>Tools</Label.Detail>
           </Label>
-          <Label as="button" color="blue" image>
+          <Label as="button" color="black" image>
             <Label.Detail>ReLoad</Label.Detail>
           </Label>
-          <Label as="button" color="yellow" image>
+          <Label as="button" color="black" image>
             <Label.Detail>Save Contents</Label.Detail>
           </Label>
           <Label
             as="button"
-            color="purple"
+            color="black"
             image
             onClick={toggleChatBoxVisibility}
           >
