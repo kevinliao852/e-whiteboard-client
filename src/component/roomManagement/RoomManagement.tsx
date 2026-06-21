@@ -1,6 +1,8 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
+import { API_SERVER_HOST } from "../../config/config";
+import { getApiHostErrorMessage, parseJsonResponse } from "../../utils/api";
 
 const drift = keyframes`
   from {
@@ -406,16 +408,68 @@ const Tip = styled.div`
   line-height: 1.5;
 `;
 
-const onlineUsers = [
-  { name: "Product Sync", status: "Sketching customer flow" },
-  { name: "Design Review", status: "Commenting on navigation states" },
-  { name: "Sprint Room", status: "Breaking features into tasks" },
-  { name: "Workshop Space", status: "Mapping group ideas live" },
-];
+const EmptyState = styled.div`
+  padding: 1rem 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+`;
+
+interface DemoRoom {
+  id: string;
+  name: string;
+  status: string;
+  participants: number;
+  activity: string;
+}
 
 export const RoomManagement = () => {
   const history = useHistory();
   const [roomId, setRoomId] = useState("");
+  const [rooms, setRooms] = useState<DemoRoom[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isActive = true;
+    const configError = getApiHostErrorMessage(API_SERVER_HOST);
+
+    if (configError) {
+      setLoadError(configError);
+      setIsLoading(false);
+      return () => {
+        isActive = false;
+      };
+    }
+
+    fetch(`${API_SERVER_HOST}/rooms`)
+      .then((response) => {
+        return parseJsonResponse<DemoRoom[]>(response);
+      })
+      .then((data) => {
+        if (!isActive) {
+          return;
+        }
+
+        setRooms(data);
+        setLoadError(null);
+      })
+      .catch((error: Error) => {
+        if (!isActive) {
+          return;
+        }
+
+        setLoadError(error.message);
+      })
+      .finally(() => {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -452,7 +506,7 @@ export const RoomManagement = () => {
           </div>
           <QuickStats>
             <Stat>
-              <StatValue>{onlineUsers.length}</StatValue>
+              <StatValue>{rooms.length}</StatValue>
               <StatLabel>active spaces</StatLabel>
             </Stat>
             <Stat>
@@ -473,17 +527,29 @@ export const RoomManagement = () => {
               <PanelDescription>
                 A quick pulse of where collaboration is happening right now.
               </PanelDescription>
-              <UserGrid>
-                {onlineUsers.map((room) => (
-                  <UserCard key={room.name}>
-                    <UserName>
-                      <Presence />
-                      {room.name}
-                    </UserName>
-                    <UserMeta>{room.status}</UserMeta>
-                  </UserCard>
-                ))}
-              </UserGrid>
+              {isLoading && <EmptyState>Loading demo rooms...</EmptyState>}
+              {loadError && (
+                <EmptyState>
+                  Could not load demo rooms from `{API_SERVER_HOST}/rooms`:{" "}
+                  {loadError}
+                </EmptyState>
+              )}
+              {!isLoading && !loadError && (
+                <UserGrid>
+                  {rooms.map((room) => (
+                    <UserCard key={room.id}>
+                      <UserName>
+                        <Presence />
+                        {room.name}
+                      </UserName>
+                      <UserMeta>{room.status}</UserMeta>
+                      <UserMeta>
+                        {room.participants} participants • {room.activity}
+                      </UserMeta>
+                    </UserCard>
+                  ))}
+                </UserGrid>
+              )}
             </PanelBody>
           </Panel>
 

@@ -27,7 +27,8 @@
     "start": "react-scripts --openssl-legacy-provider start",
     "build": "react-scripts --openssl-legacy-provider build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "mock:server": "json-server --watch db.json --port 3001"
   },
   "eslintConfig": {
     "extends": [
@@ -52,7 +53,8 @@
     "@types/gapi.auth2": "^0.0.61",
     "@types/minimatch": "^6.0.0",
     "@types/react-router-dom": "^5.1.7",
-    "@types/styled-components": "^5.1.26"
+    "@types/styled-components": "^5.1.26",
+    "json-server": "^1.0.0-beta.15"
   },
   "resolutions": {
     "@types/minimatch": "5.1.2"

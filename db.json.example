@@ -1,0 +1,49 @@
+{
+  "rooms": [
+    {
+      "id": "design-review",
+      "name": "Design Review",
+      "status": "Commenting on navigation states",
+      "participants": 5,
+      "activity": "2m ago"
+    },
+    {
+      "id": "product-sync",
+      "name": "Product Sync",
+      "status": "Sketching customer flow",
+      "participants": 3,
+      "activity": "Live now"
+    },
+    {
+      "id": "sprint-room",
+      "name": "Sprint Room",
+      "status": "Breaking features into tasks",
+      "participants": 7,
+      "activity": "5m ago"
+    },
+    {
+      "id": "workshop-space",
+      "name": "Workshop Space",
+      "status": "Mapping group ideas live",
+      "participants": 4,
+      "activity": "12m ago"
+    }
+  ],
+  "whiteboards": [
+    {
+      "id": "wb-1001",
+      "name": "Onboarding Journey",
+      "user-id": 1
+    },
+    {
+      "id": "wb-1002",
+      "name": "Navigation Concepts",
+      "user-id": 1
+    },
+    {
+      "id": "wb-1003",
+      "name": "Sprint Planning Board",
+      "user-id": 1
+    }
+  ]
+}
