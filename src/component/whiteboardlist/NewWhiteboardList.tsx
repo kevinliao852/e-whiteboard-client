@@ -4,7 +4,11 @@ import styled, { keyframes } from "styled-components";
 import { useAppSelecter } from "../../app/hooks";
 import { API_SERVER_HOST } from "../../config/config";
 import { selectUserId } from "../../features/user/userSlice";
-import { getApiHostErrorMessage, parseJsonResponse } from "../../utils/api";
+import {
+  buildApiUrl,
+  getApiHostErrorMessage,
+  parseJsonResponse,
+} from "../../utils/api";
 
 const drift = keyframes`
   from {
@@ -398,11 +402,17 @@ export const NewWhiteboardList = () => {
         {isLoading && <EmptyState>Loading boards...</EmptyState>}
         {loadError && (
           <EmptyState>
-            Could not load boards from `{API_SERVER_HOST}/whiteboards?user-id=
+            Could not load boards from `{API_SERVER_HOST}/v1/whiteboards?user-id=
             {userId ?? 1}`: {loadError}
           </EmptyState>
         )}
-        {!isLoading && !loadError && (
+        {!isLoading && !loadError && whiteboards.length === 0 && (
+          <EmptyState>
+            No boards yet. Create a room or seed mock data to start your first
+            whiteboard workspace.
+          </EmptyState>
+        )}
+        {!isLoading && !loadError && whiteboards.length > 0 && (
           <BoardGrid>
             {whiteboards.map((whiteboard, index) => (
               <BoardCard
@@ -451,7 +461,9 @@ export const NewWhiteboardList = () => {
 };
 
 function getWhiteboardList(userId: string) {
-  return fetch(`${API_SERVER_HOST}/whiteboards?user-id=${userId}`).then((response) =>
-    parseJsonResponse<Whiteboard[]>(response),
-  );
+  return fetch(
+    buildApiUrl(API_SERVER_HOST, "/v1/whiteboards", {
+      "user-id": userId,
+    }),
+  ).then((response) => parseJsonResponse<Whiteboard[]>(response));
 }

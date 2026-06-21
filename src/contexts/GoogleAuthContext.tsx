@@ -33,7 +33,7 @@ export const GoogleAuthContextStore = (props: any) => {
     //       .getAuthResponse().id_token;
 
     //     axios
-    //       .post(`${host}/login`, `idtoken=${idToken}`, {
+    //       .post(`${host}/v1/login`, `idtoken=${idToken}`, {
     //         headers: { "Access-Control-Allow-Credentials": true },
     //         withCredentials: true,
     //       })

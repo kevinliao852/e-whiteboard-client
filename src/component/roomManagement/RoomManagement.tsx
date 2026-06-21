@@ -441,7 +441,7 @@ export const RoomManagement = () => {
       };
     }
 
-    fetch(`${API_SERVER_HOST}/rooms`)
+    fetch(`${API_SERVER_HOST}/v1/rooms`)
       .then((response) => {
         return parseJsonResponse<DemoRoom[]>(response);
       })
@@ -530,7 +530,7 @@ export const RoomManagement = () => {
               {isLoading && <EmptyState>Loading demo rooms...</EmptyState>}
               {loadError && (
                 <EmptyState>
-                  Could not load demo rooms from `{API_SERVER_HOST}/rooms`:{" "}
+                  Could not load demo rooms from `{API_SERVER_HOST}/v1/rooms`:{" "}
                   {loadError}
                 </EmptyState>
               )}

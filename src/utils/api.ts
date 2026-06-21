@@ -22,6 +22,26 @@ export async function parseJsonResponse<T>(response: Response): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+export function buildApiUrl(
+  baseUrl: string,
+  path: string,
+  query?: Record<string, string | number | null | undefined>,
+): string {
+  const url = new URL(path, `${baseUrl}/`);
+
+  if (query) {
+    Object.entries(query).forEach(([key, value]) => {
+      if (value === undefined || value === null) {
+        return;
+      }
+
+      url.searchParams.set(key, String(value));
+    });
+  }
+
+  return url.toString();
+}
+
 export function getApiHostErrorMessage(apiHost: string): string | null {
   if (!apiHost) {
     return "REACT_APP_API_SERVER_HOST is not set. Point it to your API or mock server, for example http://localhost:3001, then restart the React dev server.";

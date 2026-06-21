@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { API_SERVER_HOST } from "../config/config";
-import { getApiHostErrorMessage, parseJsonResponse } from "../utils/api";
+import {
+  buildApiUrl,
+  getApiHostErrorMessage,
+  parseJsonResponse,
+} from "../utils/api";
 
 interface ChatHistoryItem {
   id: number;
@@ -8,7 +12,7 @@ interface ChatHistoryItem {
   message: string;
 }
 
-export function useChatWebSocket(id: string) {
+export function useChatWebSocket(id?: string) {
   const [messages, setMessages] = useState<string[]>([]);
   const [historyError, setHistoryError] = useState<string | null>(null);
   const wsRef = useRef<WebSocket>();
@@ -24,7 +28,19 @@ export function useChatWebSocket(id: string) {
       };
     }
 
-    fetch(`${API_SERVER_HOST}/chatMessages?room-id=${id}`)
+    if (!id) {
+      setMessages([]);
+      setHistoryError(null);
+      return () => {
+        isActive = false;
+      };
+    }
+
+    fetch(
+      buildApiUrl(API_SERVER_HOST, "/v1/chatMessages", {
+        "room-id": id,
+      }),
+    )
       .then((response) => parseJsonResponse<ChatHistoryItem[]>(response))
       .then((history) => {
         if (!isActive) {
@@ -49,7 +65,7 @@ export function useChatWebSocket(id: string) {
 
   useEffect(() => {
     const host = process.env.REACT_APP_WEBSOCKET_CHAT_HOST;
-    if (!host) {
+    if (!host || !id) {
       console.error("REACT_APP_WEBSOCKET_CHAT_HOST is not defined");
       return;
     }

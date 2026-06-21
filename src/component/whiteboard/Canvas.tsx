@@ -43,7 +43,7 @@ const setDrawingLineData = (ws: WebSocket, data: DrawingLineData) => {
 };
 
 export const Canvas = (): JSX.Element => {
-  const id = useParams<{ id: string }>().id;
+  const id = useParams<{ id?: string }>().id;
   const { wsRef } = useWhiteboardWebSocket(id);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
@@ -101,7 +101,7 @@ export const Canvas = (): JSX.Element => {
   }, [sendDrawingData]);
 
   useEffect(() => {
-    if (!wsRef.current) {
+    if (!id || !wsRef.current) {
       return;
     }
 
@@ -122,7 +122,7 @@ export const Canvas = (): JSX.Element => {
     return () => {
       window.removeEventListener("whiteboard-ws-onmessage", onmessage);
     };
-  }, [wsRef]);
+  }, [id, wsRef]);
 
   return (
     <CanvasFrame ref={frameRef}>

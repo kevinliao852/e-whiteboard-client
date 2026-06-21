@@ -33,10 +33,11 @@ function useStatusChecker() {
   }, [setStatus]);
 }
 
-function whiteboardWebSocket(id: string) {
-  const ws = new WebSocket(
-    process.env.REACT_APP_WEBSOCKET_DRAW_HOST! + `/${id}`,
-  );
+function whiteboardWebSocket(id?: string) {
+  const host = process.env.REACT_APP_WEBSOCKET_DRAW_HOST!;
+  const wsUrl = id ? `${host}/${id}?room_id=${id}` : host;
+  console.info("opening whiteboard websocket", { id, wsUrl });
+  const ws = new WebSocket(wsUrl);
 
   ws.onerror = (event: Event) => {
     const customEvent = new CustomEvent("whiteboard-ws-onerror", {
@@ -69,20 +70,31 @@ function whiteboardWebSocket(id: string) {
   return ws;
 }
 
-export function useWhiteboardWebSocket(id: string) {
+export function useWhiteboardWebSocket(id?: string) {
   useStatusChecker();
   const wsRef = useRef<WebSocket>();
-  const idRef = useRef<string>(id);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    wsRef.current = whiteboardWebSocket(idRef.current);
+    const host = process.env.REACT_APP_WEBSOCKET_DRAW_HOST;
+
+    if (!host) {
+      console.error(
+        "REACT_APP_WEBSOCKET_DRAW_HOST is not set, whiteboard websocket will not connect",
+      );
+      dispatch(changeStatus("disconnected"));
+      return;
+    }
+
+    dispatch(changeStatus("connecting"));
+    wsRef.current = whiteboardWebSocket(id);
 
     return () => {
       if (wsRef.current) {
         wsRef.current.close();
       }
     };
-  }, []);
+  }, [dispatch, id]);
 
   return { wsRef };
 }

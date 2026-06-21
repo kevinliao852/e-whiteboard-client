@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { useAppSelecter } from "../../app/hooks";
 import { API_SERVER_HOST } from "../../config/config";
 import { selectUserId } from "../../features/user/userSlice";
+import { buildApiUrl } from "../../utils/api";
 import { Button } from "../common/Button";
 import { Container } from "../common/Container";
 import { FlexDiv } from "../common/FlexDiv";
@@ -31,9 +32,11 @@ function createWhiteboard(whiteboardData: { name: string; userId: number }) {
 }
 
 function getWhiteboardList(userId: string) {
-  return fetch(`${API_SERVER_HOST}/v1/whiteboards?user-id=${userId}`).then(
-    (resposne) => resposne.json(),
-  );
+  return fetch(
+    buildApiUrl(API_SERVER_HOST, "/v1/whiteboards", {
+      "user-id": userId,
+    }),
+  ).then((resposne) => resposne.json());
 }
 
 function WhiteboardModal({
