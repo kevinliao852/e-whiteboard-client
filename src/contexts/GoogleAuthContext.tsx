@@ -1,9 +1,9 @@
 import axios from "axios";
 import React, { useEffect, useState, useCallback } from "react";
 import { useAppDispatch } from "../app/hooks";
-import { AuthStatus, changeAuthStatus } from "../features/auth/auth-slice";
+import { AuthStatus, changeAuthStatus } from "../features/auth/authSlice";
 import { GOOGLE_CLIENT_ID, API_SERVER_HOST } from "../config/config";
-import { setUserInfo, UserInfo } from "../features/user/user-slice";
+import { setUserInfo, UserInfo } from "../features/user/userSlice";
 
 const client_id = GOOGLE_CLIENT_ID;
 const host = API_SERVER_HOST;

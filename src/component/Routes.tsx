@@ -2,10 +2,10 @@ import { Route, BrowserRouter } from "react-router-dom";
 import { Home } from "./home/Home";
 import { ProtectRoute } from "./common//ProtectRoute";
 import { WhiteboardList } from "./whiteboardlist/WhiteboardList";
-import { Nav } from "./nav/nav";
+import { Nav } from "./nav/Nav";
 import { RoomManagement } from "./roomManagement/RoomManagement";
 import { NotLoggedIn } from "./common/NotLoggedIn";
-import { Room } from "./room/room";
+import { Room } from "./room/Room";
 import { NewWhiteboardList } from "./whiteboardlist/NewWhiteboardList";
 
 export const Routes = () => {

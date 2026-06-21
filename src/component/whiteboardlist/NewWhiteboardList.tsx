@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { useHistory } from "react-router-dom";
 import { API_SERVER_HOST } from "../../config/config";
 import { useAppSelecter } from "../../app/hooks";
-import { selectUserId } from "../../features/user/user-slice";
+import { selectUserId } from "../../features/user/userSlice";
 
 interface WhiteboardListProps {}
 

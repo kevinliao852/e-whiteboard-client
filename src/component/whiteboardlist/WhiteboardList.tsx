@@ -3,7 +3,7 @@ import { useHistory } from "react-router";
 import styled from "styled-components";
 import { useAppSelecter } from "../../app/hooks";
 import { API_SERVER_HOST } from "../../config/config";
-import { selectUserId } from "../../features/user/user-slice";
+import { selectUserId } from "../../features/user/userSlice";
 import { Button } from "../common/Button";
 import { Container } from "../common/Container";
 import { FlexDiv } from "../common/FlexDiv";

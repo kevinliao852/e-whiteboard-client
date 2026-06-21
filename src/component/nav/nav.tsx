@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useContext } from "react";
 import { GoogleAuthContext } from "../../contexts/GoogleAuthContext";
 import { useAuthStatus } from "../../hooks/useAuth";
-import { AuthStatus } from "../../features/auth/auth-slice";
+import { AuthStatus } from "../../features/auth/authSlice";
 
 const NavBarContainer = styled.nav`
   width: 100vw;

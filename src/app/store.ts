@@ -1,7 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
-import whiteboardReducer from "../features/whiteboard/whiteboard-slice";
-import authReducer from "../features/auth/auth-slice";
-import userReducer from "../features/user/user-slice";
+import whiteboardReducer from "../features/whiteboard/whiteboardSlice";
+import authReducer from "../features/auth/authSlice";
+import userReducer from "../features/user/userSlice";
 
 export const store = configureStore({
   reducer: {

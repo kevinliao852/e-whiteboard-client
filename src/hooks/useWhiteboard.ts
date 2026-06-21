@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import {
   changeStatus,
   WhiteBoardStatus,
-} from "../features/whiteboard/whiteboard-slice";
+} from "../features/whiteboard/whiteboardSlice";
 
 function useStatusChecker() {
   const dispatch = useDispatch();
