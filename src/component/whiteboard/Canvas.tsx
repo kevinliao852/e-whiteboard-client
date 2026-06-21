@@ -101,14 +101,14 @@ export const Canvas = (): JSX.Element => {
   }, [sendDrawingData]);
 
   useEffect(() => {
-    if (!id || !wsRef.current) {
+    if (!wsRef.current) {
       return;
     }
 
     const onmessage = ((event: CustomEvent) => {
-      const rawData = event.detail?.data;
-      const data = JSON.parse(rawData);
-      const { start, end } = data?.data || {};
+      const payload =
+        typeof event.detail === "string" ? JSON.parse(event.detail) : event.detail;
+      const { start, end } = payload?.data || {};
 
       if (!start || !end) {
         return;
@@ -122,7 +122,7 @@ export const Canvas = (): JSX.Element => {
     return () => {
       window.removeEventListener("whiteboard-ws-onmessage", onmessage);
     };
-  }, [id, wsRef]);
+  }, [wsRef]);
 
   return (
     <CanvasFrame ref={frameRef}>

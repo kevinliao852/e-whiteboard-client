@@ -35,7 +35,7 @@ function useStatusChecker() {
 
 function whiteboardWebSocket(id?: string) {
   const host = process.env.REACT_APP_WEBSOCKET_DRAW_HOST!;
-  const wsUrl = id ? `${host}/${id}?room_id=${id}` : host;
+  const wsUrl = id ? `${host}/${id}` : host;
   console.info("opening whiteboard websocket", { id, wsUrl });
   const ws = new WebSocket(wsUrl);
 
@@ -61,10 +61,27 @@ function whiteboardWebSocket(id?: string) {
   };
 
   ws.onmessage = function (event: MessageEvent) {
-    const customEvent = new CustomEvent("whiteboard-ws-onmessage", {
-      detail: event,
-    });
-    window.dispatchEvent(customEvent);
+    try {
+      const payload = JSON.parse(event.data);
+
+      if (payload?.scope === "lobby" && payload?.data?.room_id) {
+        const customEvent = new CustomEvent("whiteboard-ws-onlobby", {
+          detail: payload,
+        });
+        window.dispatchEvent(customEvent);
+        return;
+      }
+
+      const customEvent = new CustomEvent("whiteboard-ws-onmessage", {
+        detail: payload,
+      });
+      window.dispatchEvent(customEvent);
+    } catch {
+      const customEvent = new CustomEvent("whiteboard-ws-onmessage", {
+        detail: event.data,
+      });
+      window.dispatchEvent(customEvent);
+    }
   };
 
   return ws;

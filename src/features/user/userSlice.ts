@@ -28,10 +28,15 @@ const userSlice = createSlice({
       state.displayName = action.payload.displayName;
       state.email = action.payload.email;
     },
+    clearUserInfo(state) {
+      state.id = null;
+      state.displayName = null;
+      state.email = null;
+    },
   },
 });
 
-export const { setUserInfo } = userSlice.actions;
+export const { setUserInfo, clearUserInfo } = userSlice.actions;
 
 export default userSlice.reducer;
 

@@ -57,7 +57,7 @@ export const NotLoggedIn = () => {
       <Message>
         You are not logged in. Please log in to access this page.
       </Message>
-      <Button to="/login">Go to Login</Button>
+      <Button to="/home">Back to Home</Button>
     </Container>
   );
 };
