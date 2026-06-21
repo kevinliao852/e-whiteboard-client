@@ -1,7 +1,9 @@
 import React from "react";
+import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import { Canvas } from "../whiteboard/Canvas";
 import { useAppSelecter } from "../../app/hooks";
+import { useChatWebSocket } from "../../hooks/useChat";
 
 const Container = styled.div`
   display: flex;
@@ -29,6 +31,15 @@ const InfoContainer = styled.div`
 const InfoItem = styled.div`
   font-size: 1rem;
   color: #333;
+`;
+
+const StatusIndicator = styled.span<{ connected: boolean }>`
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: ${(props) => (props.connected ? "#28a745" : "#dc3545")};
+  margin-right: 0.5rem;
 `;
 
 const WhiteboardContainer = styled.div`
@@ -115,26 +126,32 @@ const SendButton = styled.button`
 `;
 
 export const Room = () => {
-  const [messages, setMessages] = React.useState<string[]>([]);
+  const { id } = useParams<{ id: string }>();
   const [inputValue, setInputValue] = React.useState("");
+  const { messages, sendMessage } = useChatWebSocket(id);
   const status = useAppSelecter((state) => state.whiteboard.status);
 
   const handleSendMessage = () => {
     if (inputValue.trim()) {
-      setMessages([...messages, inputValue]);
+      sendMessage(inputValue);
       setInputValue("");
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSendMessage();
     }
   };
 
   return (
     <Container>
       <InfoContainer>
-        <InfoItem
-          style={{ background: status === "disconnected" ? "red" : "green" }}
-        >
-          Room ID: 12345
+        <InfoItem>
+          <StatusIndicator connected={status === "connected"} />
+          Room ID: {id}
         </InfoItem>
-        <InfoItem>Current Users: 5</InfoItem>
+        <InfoItem>Status: {status}</InfoItem>
       </InfoContainer>
       <WhiteboardContainer>
         <Whiteboard>
@@ -152,6 +169,7 @@ export const Room = () => {
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
+            onKeyPress={handleKeyPress}
             placeholder="Type your message..."
           />
           <SendButton onClick={handleSendMessage}>Send</SendButton>

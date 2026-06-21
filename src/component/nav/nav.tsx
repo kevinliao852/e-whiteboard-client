@@ -27,7 +27,7 @@ const NavLinks = styled.div`
 `;
 
 const NavLink = styled.a`
-  color: #fff;
+  color: black;
   text-decoration: none;
   font-size: 1rem;
 
@@ -83,17 +83,17 @@ export const Nav = () => {
       </Logo>
       <NavLinks>
         <NavLink>
-          <Link to="/home">
+          <Link to="/home" style={{color: "black"}}>
             <GLayout>Home</GLayout>
           </Link>
         </NavLink>
         <NavLink>
-          <Link to="/my">
+          <Link to="/my" style={{color: "black"}}>
             <GLayout>My</GLayout>
           </Link>
         </NavLink>
         <NavLink>
-          <Link to="/room-management">
+          <Link to="/room-management" style={{color: "black"}}>
             <GLayout>Room</GLayout>
           </Link>
         </NavLink>

@@ -22,46 +22,47 @@ export const GoogleAuthContextStore = (props: any) => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    gapi.load("auth2", () => {
-      gapi.auth2.init({ client_id });
-      gapi.auth2.getAuthInstance().isSignedIn.listen((signedIn) => {
-        console.log(signedIn);
-        setIsSignedIn(signedIn);
-        const idToken = gapi.auth2
-          .getAuthInstance()
-          .currentUser.get()
-          .getAuthResponse().id_token;
+    // gapi.load("auth2", () => {
+    //   gapi.auth2.init({ client_id });
+    //   gapi.auth2.getAuthInstance().isSignedIn.listen((signedIn) => {
+    //     console.log(signedIn);
+    //     setIsSignedIn(signedIn);
+    //     const idToken = gapi.auth2
+    //       .getAuthInstance()
+    //       .currentUser.get()
+    //       .getAuthResponse().id_token;
 
-        axios
-          .post(`${host}/login`, `idtoken=${idToken}`, {
-            headers: { "Access-Control-Allow-Credentials": true },
-            withCredentials: true,
-          })
-          .then((response) => {
-            const data = response.data;
+    //     axios
+    //       .post(`${host}/login`, `idtoken=${idToken}`, {
+    //         headers: { "Access-Control-Allow-Credentials": true },
+    //         withCredentials: true,
+    //       })
+    //       .then((response) => {
+    //         const data = response.data;
 
-            const userInfo: UserInfo = {
-              id: data.id,
-              displayName: data["display-name"],
-              email: data.email,
-            };
+    //         const userInfo: UserInfo = {
+    //           id: data.id,
+    //           displayName: data["display-name"],
+    //           email: data.email,
+    //         };
 
-            console.log(response);
+    //         console.log(response);
+    //         dispatch(changeAuthStatus(AuthStatus.Login));
+    //         dispatch(setUserInfo(userInfo));
+    //       })
+    //       .catch(console.log);
+    //   });
+    // });
             dispatch(changeAuthStatus(AuthStatus.Login));
-            dispatch(setUserInfo(userInfo));
-          })
-          .catch(console.log);
-      });
-    });
   }, [dispatch]);
 
   const signIn = useCallback(() => {
-    console.log(gapi.auth2.getAuthInstance().signIn());
+    // console.log(gapi.auth2.getAuthInstance().signIn());
   }, []);
 
   const signOut = useCallback(() => {
-    gapi.auth2.getAuthInstance().signOut();
-    dispatch(changeAuthStatus(AuthStatus.Logout));
+    // gapi.auth2.getAuthInstance().signOut();
+    // dispatch(changeAuthStatus(AuthStatus.Logout));
     setIsSignedIn(false);
   }, [dispatch]);
 
