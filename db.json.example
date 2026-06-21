@@ -45,5 +45,47 @@
       "name": "Sprint Planning Board",
       "user-id": 1
     }
+  ],
+  "chatMessages": [
+    {
+      "id": 1,
+      "room-id": "design-review",
+      "message": "Let’s review the navigation flow before we finalize the layout."
+    },
+    {
+      "id": 2,
+      "room-id": "design-review",
+      "message": "I’ll mark the confusing steps directly on the board."
+    },
+    {
+      "id": 3,
+      "room-id": "product-sync",
+      "message": "We need a simpler onboarding path for new users."
+    },
+    {
+      "id": 4,
+      "room-id": "product-sync",
+      "message": "Agreed. Let’s sketch the shortened journey in the first frame."
+    },
+    {
+      "id": 5,
+      "room-id": "wb-1001",
+      "message": "This board already has the onboarding notes from last session."
+    },
+    {
+      "id": 6,
+      "room-id": "wb-1001",
+      "message": "I’ll update the decision points while you refine the copy."
+    },
+    {
+      "id": 7,
+      "room-id": "wb-1002",
+      "message": "These navigation concepts need one stronger primary path."
+    },
+    {
+      "id": 8,
+      "room-id": "wb-1003",
+      "message": "Capture sprint blockers in chat as you map them on the board."
+    }
   ]
 }
