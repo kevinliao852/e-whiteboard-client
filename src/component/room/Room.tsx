@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import { useAppSelecter } from "../../app/hooks";
 import { useChatWebSocket } from "../../hooks/useChat";
+import { isOwnChatMessage } from "../../utils/chat";
 import { Canvas } from "../whiteboard/Canvas";
 
 const drift = keyframes`
@@ -318,6 +319,7 @@ const Message = styled.div<{ $self?: boolean }>`
   color: var(--ink);
   font-size: 0.92rem;
   line-height: 1.45;
+  text-align: ${(props) => (props.$self ? "right" : "left")};
 `;
 
 const MessageHeader = styled.div`
@@ -386,7 +388,16 @@ export const Room = () => {
   const [inputValue, setInputValue] = React.useState("");
   const { messages, sendMessage, historyError } = useChatWebSocket(id);
   const currentUserId = useAppSelecter((state) => state.user.id);
+  const currentUserName = useAppSelecter((state) => state.user.displayName);
   const status = useAppSelecter((state) => state.whiteboard.status);
+
+  const isOwnMessage = (senderId: number, senderName: string) =>
+    isOwnChatMessage(
+      senderId,
+      senderName,
+      currentUserId,
+      currentUserName,
+    );
 
   const handleSendMessage = () => {
     if (inputValue.trim()) {
@@ -471,10 +482,10 @@ export const Room = () => {
               {messages.map((message) => (
                 <Message
                   key={message.id}
-                  $self={currentUserId != null && message.senderId === currentUserId}
+                  $self={isOwnMessage(message.senderId, message.senderName)}
                 >
                   <MessageHeader>
-                    {message.senderId === currentUserId
+                    {isOwnMessage(message.senderId, message.senderName)
                       ? "You"
                       : message.senderName}
                   </MessageHeader>

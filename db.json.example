@@ -87,41 +87,57 @@
     {
       "id": 1,
       "room-id": "design-review",
+      "sender-id": 2,
+      "sender-name": "Maya",
       "message": "Let’s review the navigation flow before we finalize the layout."
     },
     {
       "id": 2,
       "room-id": "design-review",
+      "sender-id": 1,
+      "sender-name": "Demo Whiteboard User",
       "message": "I’ll mark the confusing steps directly on the board."
     },
     {
       "id": 3,
       "room-id": "product-sync",
+      "sender-id": 3,
+      "sender-name": "Jordan",
       "message": "We need a simpler onboarding path for new users."
     },
     {
       "id": 4,
       "room-id": "product-sync",
+      "sender-id": 1,
+      "sender-name": "Demo Whiteboard User",
       "message": "Agreed. Let’s sketch the shortened journey in the first frame."
     },
     {
       "id": 5,
       "room-id": "wb-1001",
+      "sender-id": 2,
+      "sender-name": "Alex",
       "message": "This board already has the onboarding notes from last session."
     },
     {
       "id": 6,
       "room-id": "wb-1001",
+      "sender-id": 1,
+      "sender-name": "Demo Whiteboard User",
       "message": "I’ll update the decision points while you refine the copy."
     },
     {
       "id": 7,
       "room-id": "wb-1002",
+      "sender-id": 2,
+      "sender-name": "Alex",
       "message": "These navigation concepts need one stronger primary path."
     },
     {
       "id": 8,
       "room-id": "wb-1003",
+      "sender-id": 4,
+      "sender-name": "Riley",
       "message": "Capture sprint blockers in chat as you map them on the board."
     }
   ]

@@ -13,8 +13,8 @@ import {
 interface ChatHistoryItem {
   id: number;
   "room-id": string;
-  "sender-id": number;
-  "sender-name": string;
+  "sender-id"?: number | string;
+  "sender-name"?: string;
   message: string;
 }
 
@@ -27,11 +27,13 @@ export interface ChatMessage {
 }
 
 function normalizeChatMessage(item: ChatHistoryItem): ChatMessage {
+  const senderId = Number(item["sender-id"]);
+
   return {
     id: item.id,
     roomId: item["room-id"],
-    senderId: item["sender-id"],
-    senderName: item["sender-name"],
+    senderId: Number.isNaN(senderId) ? -1 : senderId,
+    senderName: item["sender-name"] ?? "Unknown user",
     message: item.message,
   };
 }

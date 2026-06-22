@@ -18,9 +18,6 @@ export const Header = () => {
       <Menu.Item active={path === "home"}>
         <Link to="/home">Home</Link>
       </Menu.Item>
-      <Menu.Item active={path === "dashboard"}>
-        <Link to="/dashboard">Dashboard</Link>
-      </Menu.Item>
       <Menu.Item active={path === "whiteboardlist"}>
         <Link to="/whiteboardlist">WhiteboardList</Link>
       </Menu.Item>
