@@ -465,5 +465,8 @@ function getWhiteboardList(userId: string) {
     buildApiUrl(API_SERVER_HOST, "/v1/whiteboards", {
       "user-id": userId,
     }),
+    {
+      credentials: "include",
+    },
   ).then((response) => parseJsonResponse<Whiteboard[]>(response));
 }

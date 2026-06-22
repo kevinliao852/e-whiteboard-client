@@ -15,6 +15,7 @@ interface ChatHistoryItem {
 export function useChatWebSocket(id?: string) {
   const [messages, setMessages] = useState<string[]>([]);
   const [historyError, setHistoryError] = useState<string | null>(null);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const wsRef = useRef<WebSocket>();
 
   useEffect(() => {
@@ -31,15 +32,19 @@ export function useChatWebSocket(id?: string) {
     if (!id) {
       setMessages([]);
       setHistoryError(null);
+      setHistoryLoaded(false);
       return () => {
         isActive = false;
       };
     }
 
     fetch(
-      buildApiUrl(API_SERVER_HOST, "/v1/chatMessages", {
+      buildApiUrl(API_SERVER_HOST, "/v1/chat-messages", {
         "room-id": id,
       }),
+      {
+        credentials: "include",
+      },
     )
       .then((response) => parseJsonResponse<ChatHistoryItem[]>(response))
       .then((history) => {
@@ -49,6 +54,7 @@ export function useChatWebSocket(id?: string) {
 
         setMessages(history.map((item) => item.message));
         setHistoryError(null);
+        setHistoryLoaded(true);
       })
       .catch((error: Error) => {
         if (!isActive) {
@@ -56,6 +62,7 @@ export function useChatWebSocket(id?: string) {
         }
 
         setHistoryError(error.message);
+        setHistoryLoaded(false);
       });
 
     return () => {
@@ -65,7 +72,7 @@ export function useChatWebSocket(id?: string) {
 
   useEffect(() => {
     const host = process.env.REACT_APP_WEBSOCKET_CHAT_HOST;
-    if (!host || !id) {
+    if (!host || !id || !historyLoaded) {
       console.error("REACT_APP_WEBSOCKET_CHAT_HOST is not defined");
       return;
     }
@@ -80,7 +87,7 @@ export function useChatWebSocket(id?: string) {
     return () => {
       ws.close();
     };
-  }, [id]);
+  }, [historyLoaded, id]);
 
   const sendMessage = (message: string) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {

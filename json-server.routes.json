@@ -2,6 +2,8 @@
   "/v1/rooms": "/rooms",
   "/v1/whiteboards": "/whiteboards",
   "/v1/whiteboards/:id": "/whiteboards/:id",
-  "/v1/chatMessages": "/chatMessages",
-  "/v1/login": "/login"
+  "/v1/whiteboards/:id/points": "/points?whiteboard_id=:id",
+  "/v1/chat-messages": "/chatMessages",
+  "/v1/login": "/mockLogin",
+  "/login": "/mockLogin"
 }

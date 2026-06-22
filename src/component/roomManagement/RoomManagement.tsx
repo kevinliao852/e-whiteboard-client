@@ -441,7 +441,9 @@ export const RoomManagement = () => {
       };
     }
 
-    fetch(`${API_SERVER_HOST}/v1/rooms`)
+    fetch(`${API_SERVER_HOST}/v1/rooms`, {
+      credentials: "include",
+    })
       .then((response) => {
         return parseJsonResponse<DemoRoom[]>(response);
       })

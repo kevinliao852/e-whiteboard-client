@@ -6,7 +6,6 @@ It provides:
 - room-based whiteboard sessions
 - realtime drawing over WebSocket
 - room chat and chat history loading
-- Google login
 - mock API support with `json-server` for local demo data
 
 ![Image](https://i.imgur.com/XV8RHdK.gif)
@@ -15,7 +14,7 @@ It provides:
 
 This client works with the companion backend in `e-whiteboard-server`.
 For local UI development, it can also use `json-server` to serve demo data for
-boards, rooms, and chat history.
+boards, rooms, chat history, and a demo login profile.
 
 ## Prerequisites
 
@@ -34,6 +33,10 @@ If you want to use mock API data instead of the real backend, point:
 ```env
 REACT_APP_API_SERVER_HOST=http://localhost:3001
 ```
+
+When `REACT_APP_API_SERVER_HOST` points to the mock server on port `3001`, the
+Login button uses the mock profile served by the local mock server. When it
+points to the real backend, the app uses the real Google login flow.
 
 ## Available Scripts
 
@@ -58,7 +61,7 @@ It correctly bundles React in production mode and optimizes the build for the be
 
 - This project is based on Create React App.
 - The drawing room uses WebSocket routes from the backend server.
-- The mock server only covers HTTP demo data. It does not replace the drawing WebSocket backend.
+- The mock server covers demo HTTP data and a mock login profile. It does not replace the drawing WebSocket backend.
 
 ## Repositories
 
@@ -68,4 +71,3 @@ The project source code is spread across a number of repos:
 |:-----------------------------|:-----------------------------------------------------------|
 | e-whiteboard-server          | https://github.com/kevinliao852/e-whiteboard-server        |
 | e-whiteboard-client          | https://github.com/kevinliao852/e-whiteboard-client        |
-

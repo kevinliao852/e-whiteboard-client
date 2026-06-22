@@ -33,9 +33,9 @@ function useStatusChecker() {
   }, [setStatus]);
 }
 
-function whiteboardWebSocket(id?: string) {
+function whiteboardWebSocket(id: string) {
   const host = process.env.REACT_APP_WEBSOCKET_DRAW_HOST!;
-  const wsUrl = id ? `${host}/${id}` : host;
+  const wsUrl = `${host}/${id}`;
   console.info("opening whiteboard websocket", { id, wsUrl });
   const ws = new WebSocket(wsUrl);
 
@@ -64,14 +64,6 @@ function whiteboardWebSocket(id?: string) {
     try {
       const payload = JSON.parse(event.data);
 
-      if (payload?.scope === "lobby" && payload?.data?.room_id) {
-        const customEvent = new CustomEvent("whiteboard-ws-onlobby", {
-          detail: payload,
-        });
-        window.dispatchEvent(customEvent);
-        return;
-      }
-
       const customEvent = new CustomEvent("whiteboard-ws-onmessage", {
         detail: payload,
       });
@@ -87,7 +79,7 @@ function whiteboardWebSocket(id?: string) {
   return ws;
 }
 
-export function useWhiteboardWebSocket(id?: string) {
+export function useWhiteboardWebSocket(id?: string, enabled = true) {
   useStatusChecker();
   const wsRef = useRef<WebSocket>();
   const dispatch = useDispatch();
@@ -103,6 +95,11 @@ export function useWhiteboardWebSocket(id?: string) {
       return;
     }
 
+    if (!id || !enabled) {
+      dispatch(changeStatus("disconnected"));
+      return;
+    }
+
     dispatch(changeStatus("connecting"));
     wsRef.current = whiteboardWebSocket(id);
 
@@ -111,7 +108,7 @@ export function useWhiteboardWebSocket(id?: string) {
         wsRef.current.close();
       }
     };
-  }, [dispatch, id]);
+  }, [dispatch, enabled, id]);
 
   return { wsRef };
 }

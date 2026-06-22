@@ -29,6 +29,11 @@
       "activity": "12m ago"
     }
   ],
+  "mockLogin": {
+    "id": 1,
+    "display-name": "Demo Whiteboard User",
+    "email": "demo.whiteboard@example.com"
+  },
   "whiteboards": [
     {
       "id": "wb-1001",
@@ -44,6 +49,38 @@
       "id": "wb-1003",
       "name": "Sprint Planning Board",
       "user-id": 1
+    }
+  ],
+  "points": [
+    {
+      "id": 1,
+      "whiteboard_id": "wb-1001",
+      "start": [64, 92],
+      "end": [188, 138]
+    },
+    {
+      "id": 2,
+      "whiteboard_id": "wb-1001",
+      "start": [188, 138],
+      "end": [286, 184]
+    },
+    {
+      "id": 3,
+      "whiteboard_id": "wb-1002",
+      "start": [120, 74],
+      "end": [320, 74]
+    },
+    {
+      "id": 4,
+      "whiteboard_id": "wb-1002",
+      "start": [198, 74],
+      "end": [198, 236]
+    },
+    {
+      "id": 5,
+      "whiteboard_id": "wb-1003",
+      "start": [88, 118],
+      "end": [246, 198]
     }
   ],
   "chatMessages": [

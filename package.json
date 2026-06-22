@@ -28,7 +28,7 @@
     "build": "react-scripts --openssl-legacy-provider build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "mock:server": "json-server --watch db.json --routes json-server.routes.json --port 3001"
+    "mock:server": "node scripts/mock-server.mjs"
   },
   "eslintConfig": {
     "extends": [

@@ -19,6 +19,7 @@ interface Whiteboard {
 function deleteWhiteboard(id: string) {
   return fetch(`${API_SERVER_HOST}/v1/whiteboards/${id}`, {
     method: "DELETE",
+    credentials: "include",
   });
 }
 
@@ -27,6 +28,7 @@ function createWhiteboard(whiteboardData: { name: string; userId: number }) {
 
   return fetch(`${API_SERVER_HOST}/v1/whiteboards`, {
     method: "POST",
+    credentials: "include",
     body: JSON.stringify({ "user-id": userId, name }),
   });
 }
@@ -36,6 +38,9 @@ function getWhiteboardList(userId: string) {
     buildApiUrl(API_SERVER_HOST, "/v1/whiteboards", {
       "user-id": userId,
     }),
+    {
+      credentials: "include",
+    },
   ).then((resposne) => resposne.json());
 }
 

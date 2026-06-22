@@ -1,5 +1,5 @@
 import React from "react";
-import { useHistory, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import { useAppSelecter } from "../../app/hooks";
 import { useChatWebSocket } from "../../hooks/useChat";
@@ -369,32 +369,9 @@ const SendButton = styled.button`
 
 export const Room = () => {
   const { id } = useParams<{ id: string }>();
-  const history = useHistory();
   const [inputValue, setInputValue] = React.useState("");
   const { messages, sendMessage, historyError } = useChatWebSocket(id);
   const status = useAppSelecter((state) => state.whiteboard.status);
-
-  React.useEffect(() => {
-    if (id) {
-      return;
-    }
-
-    const onLobbyMessage = ((event: CustomEvent) => {
-      const roomId = event.detail?.data?.room_id;
-
-      if (!roomId) {
-        return;
-      }
-
-      history.replace(`/rooms/${roomId}`);
-    }) as EventListener;
-
-    window.addEventListener("whiteboard-ws-onlobby", onLobbyMessage);
-
-    return () => {
-      window.removeEventListener("whiteboard-ws-onlobby", onLobbyMessage);
-    };
-  }, [history, id]);
 
   const handleSendMessage = () => {
     if (inputValue.trim()) {

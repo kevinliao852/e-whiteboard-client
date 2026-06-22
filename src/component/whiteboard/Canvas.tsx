@@ -1,11 +1,18 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import { useParams } from "react-router";
 import styled from "styled-components";
+import { API_SERVER_HOST } from "../../config/config";
 import { useWhiteboardWebSocket } from "../../hooks/useWhiteboard";
+import { getApiHostErrorMessage, parseJsonResponse } from "../../utils/api";
 
 type DrawingLineData = {
-  start: Array<number>;
-  end: Array<number>;
+  start: [number, number];
+  end: [number, number];
+};
+
+type WhiteboardPoint = DrawingLineData & {
+  id: number;
+  whiteboard_id: number | string;
 };
 
 const DEFAULT_WIDTH = 960;
@@ -44,7 +51,8 @@ const setDrawingLineData = (ws: WebSocket, data: DrawingLineData) => {
 
 export const Canvas = (): JSX.Element => {
   const id = useParams<{ id?: string }>().id;
-  const { wsRef } = useWhiteboardWebSocket(id);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+  const { wsRef } = useWhiteboardWebSocket(id, historyLoaded);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const controllerRef = useRef<CanvasController>();
@@ -101,6 +109,50 @@ export const Canvas = (): JSX.Element => {
   }, [sendDrawingData]);
 
   useEffect(() => {
+    if (!id) {
+      controllerRef.current?.replaceLines([]);
+      setHistoryLoaded(false);
+      return;
+    }
+
+    const configError = getApiHostErrorMessage(API_SERVER_HOST);
+
+    if (configError) {
+      console.error(configError);
+      return;
+    }
+
+    let isActive = true;
+
+    fetch(`${API_SERVER_HOST}/v1/whiteboards/${id}/points`, {
+      credentials: "include",
+    })
+      .then((response) => parseJsonResponse<WhiteboardPoint[]>(response))
+      .then((points) => {
+        if (!isActive) {
+          return;
+        }
+
+        controllerRef.current?.replaceLines(
+          points.map(({ start, end }) => ({ start, end })),
+        );
+        setHistoryLoaded(true);
+      })
+      .catch((error: Error) => {
+        if (!isActive) {
+          return;
+        }
+
+        setHistoryLoaded(false);
+        console.error(`Failed to load whiteboard points for ${id}:`, error);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [id]);
+
+  useEffect(() => {
     if (!wsRef.current) {
       return;
     }
@@ -114,7 +166,7 @@ export const Canvas = (): JSX.Element => {
         return;
       }
 
-      controllerRef.current?.drawLine(start, end);
+      controllerRef.current?.appendLine(start, end);
     }) as EventListener;
 
     window.addEventListener("whiteboard-ws-onmessage", onmessage);
@@ -148,6 +200,7 @@ class CanvasController {
   private isDrawing = false;
   private displayWidth: number;
   private displayHeight: number;
+  private lineSegments: DrawingLineData[] = [];
   ctx: CanvasRenderingContext2D;
 
   constructor(private canvasMetaData: CanvasMetaData) {
@@ -167,6 +220,7 @@ class CanvasController {
     this.canvasMetaData.canvas.width = width;
     this.canvasMetaData.canvas.height = height;
     this.applyContextStyle();
+    this.redraw();
   }
 
   draw(event: MouseEvent) {
@@ -174,9 +228,9 @@ class CanvasController {
       return;
     }
 
-    const startPoint = [this.lastX, this.lastY];
-    const nextPoint = [event.offsetX, event.offsetY];
-    this.drawLine(startPoint, nextPoint);
+    const startPoint: [number, number] = [this.lastX, this.lastY];
+    const nextPoint: [number, number] = [event.offsetX, event.offsetY];
+    this.appendLine(startPoint, nextPoint);
     [this.lastX, this.lastY] = nextPoint;
 
     this.canvasMetaData.storeCallback({
@@ -185,7 +239,25 @@ class CanvasController {
     });
   }
 
-  drawLine(start: Array<number>, end: Array<number>) {
+  appendLine(start: [number, number], end: [number, number]) {
+    this.lineSegments.push({ start, end });
+    this.drawLine(start, end);
+  }
+
+  replaceLines(lines: DrawingLineData[]) {
+    this.lineSegments = [...lines];
+    this.redraw();
+  }
+
+  private redraw() {
+    this.ctx.clearRect(0, 0, this.displayWidth, this.displayHeight);
+
+    this.lineSegments.forEach(({ start, end }) => {
+      this.drawLine(start, end);
+    });
+  }
+
+  private drawLine(start: [number, number], end: [number, number]) {
     this.ctx.beginPath();
     this.ctx.moveTo(start[0], start[1]);
     this.ctx.lineTo(end[0], end[1]);

@@ -6,6 +6,7 @@ import { Nav } from "./nav/Nav";
 import { RoomManagement } from "./roomManagement/RoomManagement";
 import { NotLoggedIn } from "./common/NotLoggedIn";
 import { Room } from "./room/Room";
+import { NewRoom } from "./room/NewRoom";
 import { NewWhiteboardList } from "./whiteboardlist/NewWhiteboardList";
 
 export const Routes = () => {
@@ -18,7 +19,7 @@ export const Routes = () => {
       <Route path="/not-login" exact component={NotLoggedIn} />
       <ProtectRoute path="/my" exact component={NewWhiteboardList} />
       <ProtectRoute path="/rooms/:id" exact component={Room} />
-      <ProtectRoute path="/new-room" exact component={Room} />
+      <ProtectRoute path="/new-room" exact component={NewRoom} />
     </BrowserRouter>
   );
 };
