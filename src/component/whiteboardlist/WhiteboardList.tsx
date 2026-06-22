@@ -23,13 +23,15 @@ function deleteWhiteboard(id: string) {
   });
 }
 
-function createWhiteboard(whiteboardData: { name: string; userId: number }) {
-  const { name, userId } = whiteboardData;
-
+function createWhiteboard(whiteboardData: { name: string }) {
+  const { name } = whiteboardData;
   return fetch(`${API_SERVER_HOST}/v1/whiteboards`, {
     method: "POST",
     credentials: "include",
-    body: JSON.stringify({ "user-id": userId, name }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ name }),
   });
 }
 
@@ -47,13 +49,12 @@ function getWhiteboardList(userId: string) {
 function WhiteboardModal({
   setList,
   setIsModalOpen,
-  userId,
 }: {
   setList: any;
-  userId: number;
   setIsModalOpen: any;
 }) {
   const [name, setName] = useState("");
+  const userId = useAppSelecter(selectUserId);
 
   return (
     <div>
@@ -66,10 +67,11 @@ function WhiteboardModal({
         <Button
           onClick={() => {
             createWhiteboard({
-              userId,
               name,
             }).then(() => {
-              getWhiteboardList(userId.toString()).then(setList);
+              if (userId != null) {
+                getWhiteboardList(userId.toString()).then(setList);
+              }
             });
             setIsModalOpen(false);
           }}
@@ -98,7 +100,7 @@ export const WhiteboardList: FC<WhiteboardListProps> = () => {
   }
 
   function go2Whiteboard(id: string) {
-    history.push(`/rooms/${id}`);
+    history.push(`/whiteboards/${id}`);
   }
 
   return (
@@ -107,11 +109,7 @@ export const WhiteboardList: FC<WhiteboardListProps> = () => {
         create a new whiteboard
       </Button>
       {isModalOpen && (
-        <WhiteboardModal
-          userId={userId}
-          setList={setList}
-          setIsModalOpen={setIsModalOpen}
-        />
+        <WhiteboardModal setList={setList} setIsModalOpen={setIsModalOpen} />
       )}
       <div>
         {list.map((whiteboard) => (

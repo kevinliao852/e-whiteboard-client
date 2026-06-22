@@ -7,6 +7,7 @@ interface authState {
 }
 
 export enum AuthStatus {
+  Checking = "CHECKING",
   Login = "LOGIN",
   Logout = "LOGOUT",
 }
@@ -14,7 +15,7 @@ export enum AuthStatus {
 export type authStatus = AuthStatus;
 
 const initialState: authState = {
-  status: AuthStatus.Logout,
+  status: AuthStatus.Checking,
 };
 
 const authSlice = createSlice({

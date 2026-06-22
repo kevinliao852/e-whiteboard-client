@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { KeyboardEvent, MouseEvent, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import { useAppSelecter } from "../../app/hooks";
@@ -210,7 +210,7 @@ const BoardGrid = styled.section`
   }
 `;
 
-const BoardCard = styled.button`
+const BoardCard = styled.div`
   display: block;
   width: 100%;
   padding: 0;
@@ -222,6 +222,7 @@ const BoardCard = styled.button`
   overflow: hidden;
   backdrop-filter: blur(12px);
   box-shadow: 0 24px 56px rgba(24, 36, 61, 0.1);
+  outline: none;
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
@@ -231,6 +232,11 @@ const BoardCard = styled.button`
     transform: translateY(-3px);
     border-color: rgba(255, 107, 61, 0.2);
     box-shadow: 0 28px 58px rgba(24, 36, 61, 0.12);
+  }
+
+  &:focus-visible {
+    border-color: rgba(255, 107, 61, 0.45);
+    box-shadow: 0 0 0 0.24rem rgba(255, 107, 61, 0.12);
   }
 `;
 
@@ -274,12 +280,12 @@ const CardMeta = styled.div`
   line-height: 1.5;
 `;
 
-const CardFooter = styled.div`
+const CardActions = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-top: 0.8rem;
+  margin-top: 0.85rem;
 `;
 
 const Badge = styled.span`
@@ -298,6 +304,32 @@ const OpenText = styled.span`
   color: var(--ink);
   font-size: 0.9rem;
   font-weight: 700;
+`;
+
+const DeleteButton = styled.button`
+  padding: 0.55rem 0.8rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(185, 56, 27, 0.12);
+  color: #b9381b;
+  font-size: 0.84rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    background: rgba(185, 56, 27, 0.18);
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.7;
+    transform: none;
+  }
 `;
 
 const EmptyState = styled.div`
@@ -322,6 +354,8 @@ export const NewWhiteboardList = () => {
   const [whiteboards, setWhiteboards] = useState<Whiteboard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     const currentUserId = userId ?? 1;
@@ -364,7 +398,54 @@ export const NewWhiteboardList = () => {
   }, [userId]);
 
   const handleWhiteboardClick = (id: string) => {
-    history.push(`/rooms/${id}`);
+    history.push(`/whiteboards/${id}`);
+  };
+
+  const handleWhiteboardKeyDown = (
+    event: KeyboardEvent<HTMLDivElement>,
+    id: string,
+  ) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleWhiteboardClick(id);
+    }
+  };
+
+  const handleDeleteWhiteboard = async (
+    event: MouseEvent<HTMLButtonElement>,
+    id: string,
+  ) => {
+    event.stopPropagation();
+
+    const confirmed = window.confirm(
+      "Delete this whiteboard? This cannot be undone.",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeleteError(null);
+    setDeletingId(id);
+
+    try {
+      const response = await fetch(`${API_SERVER_HOST}/v1/whiteboards/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Delete failed with status ${response.status}`);
+      }
+
+      setWhiteboards((prev) => prev.filter((whiteboard) => whiteboard.id !== id));
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to delete whiteboard";
+      setDeleteError(message);
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
@@ -406,6 +487,7 @@ export const NewWhiteboardList = () => {
             {userId ?? 1}`: {loadError}
           </EmptyState>
         )}
+        {deleteError && <EmptyState>{deleteError}</EmptyState>}
         {!isLoading && !loadError && whiteboards.length === 0 && (
           <EmptyState>
             No boards yet. Create a room or seed mock data to start your first
@@ -418,6 +500,11 @@ export const NewWhiteboardList = () => {
               <BoardCard
                 key={whiteboard.id}
                 onClick={() => handleWhiteboardClick(whiteboard.id)}
+                onKeyDown={(event) =>
+                  handleWhiteboardKeyDown(event, whiteboard.id)
+                }
+                role="button"
+                tabIndex={0}
               >
                 <CardArt>
                   <Stroke
@@ -446,10 +533,17 @@ export const NewWhiteboardList = () => {
                   <CardTitle>{whiteboard.name}</CardTitle>
                   <CardMeta>Board ID: {whiteboard.id}</CardMeta>
                   <CardMeta>User: {whiteboard["user-id"]}</CardMeta>
-                  <CardFooter>
+                  <CardActions>
                     <Badge>Live board</Badge>
                     <OpenText>Open room</OpenText>
-                  </CardFooter>
+                    <DeleteButton
+                      type="button"
+                      onClick={(event) => handleDeleteWhiteboard(event, whiteboard.id)}
+                      disabled={deletingId === whiteboard.id}
+                    >
+                      {deletingId === whiteboard.id ? "Deleting..." : "Delete"}
+                    </DeleteButton>
+                  </CardActions>
                 </CardBody>
               </BoardCard>
             ))}

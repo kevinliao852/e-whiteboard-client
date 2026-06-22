@@ -7,6 +7,10 @@ export const ProtectRoute = ({ component: PComponent, ...rest }: any) => {
   const authStatus = useAuthStatus();
   const location = useLocation();
 
+  if (authStatus === AuthStatus.Checking) {
+    return null;
+  }
+
   if (authStatus !== AuthStatus.Login && location.pathname !== "/home") {
     console.log("user did not login", authStatus, location);
     return (

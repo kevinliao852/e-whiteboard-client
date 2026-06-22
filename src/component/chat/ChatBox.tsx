@@ -1,24 +1,56 @@
 import { useEffect, useState, useRef } from "react";
+import {
+  WEBSOCKET_CHAT_HOST,
+  getWebSocketHostErrorMessage,
+} from "../../config/config";
+
+type ChatMessage = {
+  id: number;
+  "room-id": string;
+  "sender-id": number;
+  "sender-name": string;
+  message: string;
+};
 
 export const ChatBox = (): JSX.Element => {
   const [socket, setSocket] = useState<WebSocket>();
   const [input, setInput] = useState<string>("");
-  const [text, setText] = useState<Array<String>>([]);
+  const [text, setText] = useState<ChatMessage[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const host = process.env.REACT_APP_WEBSOCKET_CHAT_HOST as string;
-    const sockInstance = new WebSocket(host);
+    const configError = getWebSocketHostErrorMessage(
+      WEBSOCKET_CHAT_HOST,
+      "REACT_APP_WEBSOCKET_CHAT_HOST",
+    );
+
+    if (configError) {
+      console.error(configError);
+      return;
+    }
+
+    const sockInstance = new WebSocket(WEBSOCKET_CHAT_HOST);
     setSocket(sockInstance);
+
+    return () => {
+      sockInstance.close();
+    };
   }, []);
 
   useEffect(() => {
-    if (!socket) return;
+    if (!socket) {
+      return;
+    }
 
     socket.onmessage = function ({ data }) {
-      setText([...text, data]);
+      try {
+        const parsed = JSON.parse(data) as ChatMessage;
+        setText((prev) => [...prev, parsed]);
+      } catch {
+        console.warn("Ignoring malformed chat message payload", data);
+      }
     };
-  }, [text, socket]);
+  }, [socket]);
 
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
@@ -30,7 +62,11 @@ export const ChatBox = (): JSX.Element => {
   };
 
   const renderChatMessage = () =>
-    text.map((item, index) => <p key={index}>{item}</p>);
+    text.map((item) => (
+      <p key={item.id}>
+        <strong>{item["sender-name"]}:</strong> {item.message}
+      </p>
+    ));
   return (
     <div>
       <div>{renderChatMessage()}</div>

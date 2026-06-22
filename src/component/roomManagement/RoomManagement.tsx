@@ -252,11 +252,32 @@ const UserGrid = styled.div`
   }
 `;
 
-const UserCard = styled.div`
+const UserCard = styled.button`
+  width: 100%;
   padding: 0.85rem;
   border-radius: 1.2rem;
   background: rgba(255, 255, 255, 0.84);
   border: 1px solid rgba(24, 36, 61, 0.06);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: rgba(24, 36, 61, 0.12);
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 18px 32px rgba(24, 36, 61, 0.08);
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: rgba(255, 107, 61, 0.45);
+    box-shadow: 0 0 0 0.25rem rgba(255, 107, 61, 0.12);
+  }
 `;
 
 const UserName = styled.div`
@@ -344,6 +365,40 @@ const PrimaryAction = styled(Link)`
   }
 `;
 
+const PrimaryButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.8rem;
+  padding: 0.85rem 1.1rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  box-shadow: 0 14px 30px rgba(230, 83, 39, 0.24);
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    background: var(--accent-deep);
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.75;
+    transform: none;
+  }
+
+  @media (max-width: 640px) {
+    width: 100%;
+  }
+`;
+
 const JoinForm = styled.form`
   display: grid;
   gap: 0.7rem;
@@ -414,6 +469,13 @@ const EmptyState = styled.div`
   font-size: 0.95rem;
 `;
 
+const ActionError = styled.div`
+  margin-top: 0.8rem;
+  color: #b9381b;
+  font-size: 0.92rem;
+  line-height: 1.5;
+`;
+
 interface DemoRoom {
   id: string;
   name: string;
@@ -422,12 +484,72 @@ interface DemoRoom {
   activity: string;
 }
 
+type CreatedWhiteboard = Record<string, unknown>;
+
+function getCreatedWhiteboardId(
+  payload: CreatedWhiteboard,
+  response: Response,
+): string | null {
+  const candidateFields = [
+    payload.id,
+		payload.Id,
+    payload.whiteboard_id,
+    payload["whiteboard-id"],
+    payload.whiteboardId,
+  ];
+
+  const idFromPayload = candidateFields.find(
+    (value): value is string | number =>
+      typeof value === "string" || typeof value === "number",
+  );
+
+  if (idFromPayload != null) {
+    return String(idFromPayload);
+  }
+
+  const location = response.headers.get("location");
+
+  if (!location) {
+    return null;
+  }
+
+  const locationMatch = location.match(/\/whiteboards\/([^/]+)$/);
+
+  return locationMatch ? decodeURIComponent(locationMatch[1]) : null;
+}
+
+function createWhiteboard() {
+  return fetch(`${API_SERVER_HOST}/v1/whiteboards`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: "Untitled Whiteboard",
+    }),
+  }).then(async (response) => {
+    const payload = await parseJsonResponse<CreatedWhiteboard>(response);
+    const whiteboardId = getCreatedWhiteboardId(payload, response);
+
+    if (!whiteboardId) {
+      throw new Error(
+        "Create whiteboard succeeded but no whiteboard ID was returned.",
+      );
+    }
+
+    return whiteboardId;
+  });
+}
+
 export const RoomManagement = () => {
   const history = useHistory();
   const [roomId, setRoomId] = useState("");
   const [rooms, setRooms] = useState<DemoRoom[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [isCreatingWhiteboard, setIsCreatingWhiteboard] = useState(false);
 
   useEffect(() => {
     let isActive = true;
@@ -482,7 +604,21 @@ export const RoomManagement = () => {
       return;
     }
 
-    history.push(`/rooms/${nextRoomId}`);
+    history.push(`/whiteboards/${nextRoomId}`);
+  };
+
+  const handleCreateWhiteboard = () => {
+    setIsCreatingWhiteboard(true);
+    setCreateError(null);
+
+    createWhiteboard()
+      .then((whiteboardId) => {
+        history.push(`/whiteboards/${whiteboardId}`);
+      })
+      .catch((error: Error) => {
+        setCreateError(error.message);
+        setIsCreatingWhiteboard(false);
+      });
   };
 
   return (
@@ -539,7 +675,11 @@ export const RoomManagement = () => {
               {!isLoading && !loadError && (
                 <UserGrid>
                   {rooms.map((room) => (
-                    <UserCard key={room.id}>
+                    <UserCard
+                      key={room.id}
+                      type="button"
+                      onClick={() => history.push(`/whiteboards/${room.id}`)}
+                    >
                       <UserName>
                         <Presence />
                         {room.name}
@@ -548,6 +688,7 @@ export const RoomManagement = () => {
                       <UserMeta>
                         {room.participants} participants • {room.activity}
                       </UserMeta>
+                      <UserMeta>Open room whiteboard</UserMeta>
                     </UserCard>
                   ))}
                 </UserGrid>
@@ -559,30 +700,37 @@ export const RoomManagement = () => {
             <ActionCard>
               <ActionCardBody>
                 <ActionTag>Create</ActionTag>
-                <ActionTitle>Start a fresh whiteboard room</ActionTitle>
+                <ActionTitle>Start a fresh whiteboard</ActionTitle>
                 <ActionBody>
-                  Open a new room for planning, critique, or fast sketching with
+                  Open a new whiteboard for planning, critique, or fast sketching with
                   your team.
                 </ActionBody>
-                <PrimaryAction to="/new-room">Create Room</PrimaryAction>
+                <PrimaryButton
+                  type="button"
+                  onClick={handleCreateWhiteboard}
+                  disabled={isCreatingWhiteboard}
+                >
+                  {isCreatingWhiteboard ? "Creating..." : "Create Whiteboard"}
+                </PrimaryButton>
+                {createError && <ActionError>{createError}</ActionError>}
               </ActionCardBody>
             </ActionCard>
 
             <ActionCard>
               <ActionCardBody>
                 <ActionTag>Join</ActionTag>
-                <ActionTitle>Enter an existing room</ActionTitle>
+                <ActionTitle>Open an existing whiteboard</ActionTitle>
                 <ActionBody>
-                  Paste a room ID and jump directly into the live workspace.
+                  Paste a whiteboard ID and jump directly into the live workspace.
                 </ActionBody>
                 <JoinForm onSubmit={handleSubmit}>
                   <Input
                     type="text"
                     value={roomId}
                     onChange={(event) => setRoomId(event.target.value)}
-                    placeholder="Enter room ID"
+                    placeholder="Enter whiteboard ID"
                   />
-                  <JoinButton type="submit">Join Room</JoinButton>
+                  <JoinButton type="submit">Open Whiteboard</JoinButton>
                 </JoinForm>
               </ActionCardBody>
             </ActionCard>

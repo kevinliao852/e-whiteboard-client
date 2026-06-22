@@ -150,6 +150,13 @@ const AuthButton = styled.button`
     box-shadow: 0 12px 24px rgba(24, 36, 61, 0.2);
   }
 
+  &:disabled {
+    cursor: wait;
+    opacity: 0.72;
+    transform: none;
+    box-shadow: none;
+  }
+
   @media (max-width: 760px) {
     width: 100%;
   }
@@ -176,6 +183,7 @@ export const Nav = () => {
 
   const { isSignedIn, signOut, signIn } = googleAuth;
   const isLoggedIn = authStatus === AuthStatus.Login;
+  const isChecking = authStatus === AuthStatus.Checking;
 
   return (
     <Frame>
@@ -201,9 +209,12 @@ export const Nav = () => {
             </NavItem>
           </NavItems>
 
-          <AuthButton onClick={() => (isSignedIn ? signOut() : signIn())}>
+          <AuthButton
+            onClick={() => (isSignedIn ? signOut() : signIn())}
+            disabled={isChecking}
+          >
             <AuthDot $loggedIn={isLoggedIn} />
-            {isLoggedIn ? "Logout" : "Login"}
+            {isChecking ? "Checking..." : isLoggedIn ? "Logout" : "Login"}
           </AuthButton>
         </RightSide>
       </Bar>

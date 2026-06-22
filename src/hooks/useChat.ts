@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { API_SERVER_HOST } from "../config/config";
+import {
+  API_SERVER_HOST,
+  WEBSOCKET_CHAT_HOST,
+  getWebSocketHostErrorMessage,
+} from "../config/config";
 import {
   buildApiUrl,
   getApiHostErrorMessage,
@@ -9,11 +13,31 @@ import {
 interface ChatHistoryItem {
   id: number;
   "room-id": string;
+  "sender-id": number;
+  "sender-name": string;
   message: string;
 }
 
+export interface ChatMessage {
+  id: number;
+  roomId: string;
+  senderId: number;
+  senderName: string;
+  message: string;
+}
+
+function normalizeChatMessage(item: ChatHistoryItem): ChatMessage {
+  return {
+    id: item.id,
+    roomId: item["room-id"],
+    senderId: item["sender-id"],
+    senderName: item["sender-name"],
+    message: item.message,
+  };
+}
+
 export function useChatWebSocket(id?: string) {
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const wsRef = useRef<WebSocket>();
@@ -52,7 +76,7 @@ export function useChatWebSocket(id?: string) {
           return;
         }
 
-        setMessages(history.map((item) => item.message));
+        setMessages(history.map(normalizeChatMessage));
         setHistoryError(null);
         setHistoryLoaded(true);
       })
@@ -71,17 +95,30 @@ export function useChatWebSocket(id?: string) {
   }, [id]);
 
   useEffect(() => {
-    const host = process.env.REACT_APP_WEBSOCKET_CHAT_HOST;
-    if (!host || !id || !historyLoaded) {
-      console.error("REACT_APP_WEBSOCKET_CHAT_HOST is not defined");
+    if (!id || !historyLoaded) {
       return;
     }
 
-    const ws = new WebSocket(`${host}/${id}`);
+    const configError = getWebSocketHostErrorMessage(
+      WEBSOCKET_CHAT_HOST,
+      "REACT_APP_WEBSOCKET_CHAT_HOST",
+    );
+
+    if (configError) {
+      console.error(configError);
+      return;
+    }
+
+    const ws = new WebSocket(`${WEBSOCKET_CHAT_HOST}/${id}`);
     wsRef.current = ws;
 
     ws.onmessage = (event) => {
-      setMessages((prev) => [...prev, event.data]);
+      try {
+        const parsed = JSON.parse(event.data) as ChatHistoryItem;
+        setMessages((prev) => [...prev, normalizeChatMessage(parsed)]);
+      } catch {
+        console.warn("Ignoring malformed chat message payload", event.data);
+      }
     };
 
     return () => {

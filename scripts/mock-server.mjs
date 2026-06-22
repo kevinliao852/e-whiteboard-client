@@ -27,6 +27,7 @@ createServer(async (request, response) => {
         status: "ok",
         endpoints: [
           "GET /v1/rooms",
+          "GET /v1/me",
           "GET /v1/whiteboards",
           "GET /v1/whiteboards/:id",
           "POST /v1/whiteboards",
@@ -41,6 +42,11 @@ createServer(async (request, response) => {
 
     if (request.method === "GET" && path === "/v1/rooms") {
       return sendJson(response, 200, readDb().rooms ?? []);
+    }
+
+    if (request.method === "GET" && path === "/v1/me") {
+      const db = readDb();
+      return sendJson(response, 200, db.mockLogin ?? db.login ?? {});
     }
 
     if (request.method === "GET" && path === "/v1/whiteboards") {

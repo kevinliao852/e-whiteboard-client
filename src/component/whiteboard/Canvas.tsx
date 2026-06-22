@@ -153,10 +153,6 @@ export const Canvas = (): JSX.Element => {
   }, [id]);
 
   useEffect(() => {
-    if (!wsRef.current) {
-      return;
-    }
-
     const onmessage = ((event: CustomEvent) => {
       const payload =
         typeof event.detail === "string" ? JSON.parse(event.detail) : event.detail;
@@ -174,7 +170,7 @@ export const Canvas = (): JSX.Element => {
     return () => {
       window.removeEventListener("whiteboard-ws-onmessage", onmessage);
     };
-  }, [wsRef]);
+  }, []);
 
   return (
     <CanvasFrame ref={frameRef}>

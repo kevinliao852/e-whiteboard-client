@@ -320,6 +320,20 @@ const Message = styled.div<{ $self?: boolean }>`
   line-height: 1.45;
 `;
 
+const MessageHeader = styled.div`
+  margin-bottom: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  opacity: 0.78;
+`;
+
+const MessageBody = styled.div`
+  white-space: pre-wrap;
+  word-break: break-word;
+`;
+
 const Composer = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -371,6 +385,7 @@ export const Room = () => {
   const { id } = useParams<{ id: string }>();
   const [inputValue, setInputValue] = React.useState("");
   const { messages, sendMessage, historyError } = useChatWebSocket(id);
+  const currentUserId = useAppSelecter((state) => state.user.id);
   const status = useAppSelecter((state) => state.whiteboard.status);
 
   const handleSendMessage = () => {
@@ -398,7 +413,7 @@ export const Room = () => {
               <Dot $connected={status === "connected"} />
               Live collaboration room
             </Eyebrow>
-            <Title>Room {id}</Title>
+            <Title>Whiteboard {id}</Title>
             <Description>
               Draw in real time, leave decisions in chat, and keep the room
               context visible while the conversation moves.
@@ -415,7 +430,7 @@ export const Room = () => {
             </MetaCard>
             <MetaCard>
               <MetaValue>{id || "pending..."}</MetaValue>
-              <MetaLabel>room identifier</MetaLabel>
+              <MetaLabel>whiteboard identifier</MetaLabel>
             </MetaCard>
           </MetaGrid>
         </TopBar>
@@ -439,7 +454,7 @@ export const Room = () => {
 
           <ChatPanel>
             <ChatHeader>
-              <PanelTitle>Room chat</PanelTitle>
+              <PanelTitle>Whiteboard chat</PanelTitle>
               <PanelCaption>
                 Capture context and quick decisions without leaving the board.
               </PanelCaption>
@@ -449,13 +464,21 @@ export const Room = () => {
 
             <ChatMessages>
               {messages.length === 0 && (
-                <EmptyMessage>
+              <EmptyMessage>
                   No messages yet. Use chat to coordinate while drawing.
                 </EmptyMessage>
               )}
-              {messages.map((message, index) => (
-                <Message key={index} $self={index % 2 === 1}>
-                  {message}
+              {messages.map((message) => (
+                <Message
+                  key={message.id}
+                  $self={currentUserId != null && message.senderId === currentUserId}
+                >
+                  <MessageHeader>
+                    {message.senderId === currentUserId
+                      ? "You"
+                      : message.senderName}
+                  </MessageHeader>
+                  <MessageBody>{message.message}</MessageBody>
                 </Message>
               ))}
             </ChatMessages>

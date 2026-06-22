@@ -99,6 +99,39 @@ export const GoogleAuthContextStore = ({
   }, [applyAuthenticatedUser]);
 
   useEffect(() => {
+    let isActive = true;
+
+    axios
+      .get<AuthResponse>(`${API_SERVER_HOST}/v1/me`, {
+        withCredentials: true,
+      })
+      .then((response) => {
+        if (!isActive) {
+          return;
+        }
+
+        applyAuthenticatedUser(response.data);
+      })
+      .catch((error) => {
+        if (!isActive) {
+          return;
+        }
+
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+          resetAuthentication();
+          return;
+        }
+
+        console.error("Failed to rehydrate session from /v1/me", error);
+        resetAuthentication();
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [applyAuthenticatedUser, resetAuthentication]);
+
+  useEffect(() => {
     if (!GOOGLE_CLIENT_ID) {
       if (useMockAuth) {
         console.warn(
@@ -109,12 +142,10 @@ export const GoogleAuthContextStore = ({
           "REACT_APP_GOOGLE_CLIENT_ID is not set and API_SERVER_HOST is not the mock server",
         );
       }
-      resetAuthentication();
       return;
     }
 
     let isActive = true;
-    resetAuthentication();
 
     const initializeGoogleAuth = () => {
       if (!isActive) {
@@ -165,8 +196,6 @@ export const GoogleAuthContextStore = ({
       isActive = false;
     };
   }, [
-    applyAuthenticatedUser,
-    resetAuthentication,
     signInWithMockServer,
     useMockAuth,
   ]);

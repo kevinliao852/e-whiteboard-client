@@ -4,6 +4,10 @@ import {
   changeStatus,
   WhiteBoardStatus,
 } from "../features/whiteboard/whiteboardSlice";
+import {
+  WEBSOCKET_DRAW_HOST,
+  getWebSocketHostErrorMessage,
+} from "../config/config";
 
 function useStatusChecker() {
   const dispatch = useDispatch();
@@ -30,12 +34,18 @@ function useStatusChecker() {
     window.addEventListener("whiteboard-ws-onclose", onclose);
     window.addEventListener("whiteboard-ws-onopen", onopen);
     window.addEventListener("whiteboard-ws-onmessage", onmessage);
+
+    return () => {
+      window.removeEventListener("whiteboard-ws-onerror", onerror);
+      window.removeEventListener("whiteboard-ws-onclose", onclose);
+      window.removeEventListener("whiteboard-ws-onopen", onopen);
+      window.removeEventListener("whiteboard-ws-onmessage", onmessage);
+    };
   }, [setStatus]);
 }
 
 function whiteboardWebSocket(id: string) {
-  const host = process.env.REACT_APP_WEBSOCKET_DRAW_HOST!;
-  const wsUrl = `${host}/${id}`;
+  const wsUrl = `${WEBSOCKET_DRAW_HOST}/${id}`;
   console.info("opening whiteboard websocket", { id, wsUrl });
   const ws = new WebSocket(wsUrl);
 
@@ -85,17 +95,18 @@ export function useWhiteboardWebSocket(id?: string, enabled = true) {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const host = process.env.REACT_APP_WEBSOCKET_DRAW_HOST;
-
-    if (!host) {
-      console.error(
-        "REACT_APP_WEBSOCKET_DRAW_HOST is not set, whiteboard websocket will not connect",
-      );
+    if (!id || !enabled) {
       dispatch(changeStatus("disconnected"));
       return;
     }
 
-    if (!id || !enabled) {
+    const configError = getWebSocketHostErrorMessage(
+      WEBSOCKET_DRAW_HOST,
+      "REACT_APP_WEBSOCKET_DRAW_HOST",
+    );
+
+    if (configError) {
+      console.error(configError);
       dispatch(changeStatus("disconnected"));
       return;
     }
@@ -106,6 +117,7 @@ export function useWhiteboardWebSocket(id?: string, enabled = true) {
     return () => {
       if (wsRef.current) {
         wsRef.current.close();
+        wsRef.current = undefined;
       }
     };
   }, [dispatch, enabled, id]);
