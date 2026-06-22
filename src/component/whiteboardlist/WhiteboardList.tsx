@@ -3,7 +3,7 @@ import { useHistory } from "react-router";
 import styled from "styled-components";
 import { useAppSelecter } from "../../app/hooks";
 import { API_SERVER_HOST } from "../../config/config";
-import { selectUserId } from "../../features/user/userSlice";
+import { selectUserId, selectUserRole } from "../../features/user/userSlice";
 import { buildApiUrl } from "../../utils/api";
 import { Button } from "../common/Button";
 import { Container } from "../common/Container";
@@ -85,9 +85,11 @@ function WhiteboardModal({
 
 export const WhiteboardList: FC<WhiteboardListProps> = () => {
   const userId = useAppSelecter(selectUserId);
+  const userRole = useAppSelecter(selectUserRole);
   const [list, setList] = useState<Whiteboard[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const history = useHistory();
+  const canMutateWhiteboards = userRole === "user";
 
   useEffect(() => {
     if (!userId) return;
@@ -103,13 +105,33 @@ export const WhiteboardList: FC<WhiteboardListProps> = () => {
     history.push(`/whiteboards/${id}`);
   }
 
+  const handleDeleteWhiteboard = (id: string) => {
+    if (!canMutateWhiteboards) {
+      return;
+    }
+
+    if (!window.confirm("Delete this whiteboard? This cannot be undone.")) {
+      return;
+    }
+
+    deleteWhiteboard(id).then(() => {
+      setList((prev) => prev.filter((whiteboard) => whiteboard.id !== id));
+    });
+  };
+
   return (
     <Container>
-      <Button onClick={() => setIsModalOpen(true)}>
-        create a new whiteboard
-      </Button>
-      {isModalOpen && (
-        <WhiteboardModal setList={setList} setIsModalOpen={setIsModalOpen} />
+      {canMutateWhiteboards ? (
+        <>
+          <Button onClick={() => setIsModalOpen(true)}>
+            create a new whiteboard
+          </Button>
+          {isModalOpen && (
+            <WhiteboardModal setList={setList} setIsModalOpen={setIsModalOpen} />
+          )}
+        </>
+      ) : (
+        <div>Guest sessions can open boards but cannot create or delete them.</div>
       )}
       <div>
         {list.map((whiteboard) => (
@@ -124,9 +146,13 @@ export const WhiteboardList: FC<WhiteboardListProps> = () => {
             <div>
               <Button>Edit</Button>
             </div>
-            <div>
-              <Button>delete</Button>
-            </div>
+            {canMutateWhiteboards && (
+              <div>
+                <Button onClick={() => handleDeleteWhiteboard(whiteboard.id)}>
+                  delete
+                </Button>
+              </div>
+            )}
           </WhiteboardRow>
         ))}
       </div>

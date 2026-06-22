@@ -1,7 +1,9 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
+import { useAppSelecter } from "../../app/hooks";
 import { API_SERVER_HOST } from "../../config/config";
+import { selectUserRole } from "../../features/user/userSlice";
 import { getApiHostErrorMessage, parseJsonResponse } from "../../utils/api";
 
 const drift = keyframes`
@@ -544,12 +546,14 @@ function createWhiteboard() {
 
 export const RoomManagement = () => {
   const history = useHistory();
+  const userRole = useAppSelecter(selectUserRole);
   const [roomId, setRoomId] = useState("");
   const [rooms, setRooms] = useState<DemoRoom[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [isCreatingWhiteboard, setIsCreatingWhiteboard] = useState(false);
+  const canMutateWhiteboards = userRole === "user";
 
   useEffect(() => {
     let isActive = true;
@@ -608,6 +612,10 @@ export const RoomManagement = () => {
   };
 
   const handleCreateWhiteboard = () => {
+    if (!canMutateWhiteboards) {
+      return;
+    }
+
     setIsCreatingWhiteboard(true);
     setCreateError(null);
 
@@ -705,14 +713,23 @@ export const RoomManagement = () => {
                   Open a new whiteboard for planning, critique, or fast sketching with
                   your team.
                 </ActionBody>
-                <PrimaryButton
-                  type="button"
-                  onClick={handleCreateWhiteboard}
-                  disabled={isCreatingWhiteboard}
-                >
-                  {isCreatingWhiteboard ? "Creating..." : "Create Whiteboard"}
-                </PrimaryButton>
-                {createError && <ActionError>{createError}</ActionError>}
+                {canMutateWhiteboards ? (
+                  <>
+                    <PrimaryButton
+                      type="button"
+                      onClick={handleCreateWhiteboard}
+                      disabled={isCreatingWhiteboard}
+                    >
+                      {isCreatingWhiteboard ? "Creating..." : "Create Whiteboard"}
+                    </PrimaryButton>
+                    {createError && <ActionError>{createError}</ActionError>}
+                  </>
+                ) : (
+                  <ActionError>
+                    Guest sessions can open existing boards, but creating new
+                    whiteboards requires a registered user session.
+                  </ActionError>
+                )}
               </ActionCardBody>
             </ActionCard>
 

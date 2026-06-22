@@ -25,13 +25,22 @@ export const Header = () => {
         <Link to="/whiteboardlist">WhiteboardList</Link>
       </Menu.Item>
       <Menu.Item position="right">
-        <button
-          className="ui button"
-          onClick={() => (isSignedIn ? signOut() : signIn())}
-        >
-          <i className="google icon red"></i>
-          {`Sign ${isSignedIn ? "out" : "in"}`}
-        </button>
+        {isSignedIn ? (
+          <button className="ui button" onClick={signOut}>
+            <i className="google icon red"></i>
+            Sign out
+          </button>
+        ) : (
+          <>
+            <button className="ui button" onClick={googleAuth.guestSignIn}>
+              Continue as guest
+            </button>
+            <button className="ui button" onClick={signIn}>
+              <i className="google icon red"></i>
+              Sign in
+            </button>
+          </>
+        )}
       </Menu.Item>
     </Menu>
   );

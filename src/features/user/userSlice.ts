@@ -5,18 +5,23 @@ interface UserState {
   id: number | null;
   displayName: string | null;
   email: string | null;
+  role: UserRole | null;
 }
 
 export interface UserInfo {
   id: number;
   displayName: string;
   email: string;
+  role: UserRole;
 }
+
+export type UserRole = "user" | "guest";
 
 const initialState: UserState = {
   id: null,
   displayName: null,
   email: null,
+  role: null,
 };
 
 const userSlice = createSlice({
@@ -27,11 +32,13 @@ const userSlice = createSlice({
       state.id = action.payload.id;
       state.displayName = action.payload.displayName;
       state.email = action.payload.email;
+      state.role = action.payload.role;
     },
     clearUserInfo(state) {
       state.id = null;
       state.displayName = null;
       state.email = null;
+      state.role = null;
     },
   },
 });
@@ -43,4 +50,9 @@ export default userSlice.reducer;
 export const selectUserId = createSelector(
   (state: RootState) => state.user,
   (user) => user.id
+);
+
+export const selectUserRole = createSelector(
+  (state: RootState) => state.user,
+  (user) => user.role
 );

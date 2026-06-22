@@ -3,7 +3,7 @@ import { useHistory } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import { useAppSelecter } from "../../app/hooks";
 import { API_SERVER_HOST } from "../../config/config";
-import { selectUserId } from "../../features/user/userSlice";
+import { selectUserId, selectUserRole } from "../../features/user/userSlice";
 import {
   buildApiUrl,
   getApiHostErrorMessage,
@@ -350,12 +350,14 @@ interface Whiteboard {
 
 export const NewWhiteboardList = () => {
   const userId = useAppSelecter(selectUserId);
+  const userRole = useAppSelecter(selectUserRole);
   const history = useHistory();
   const [whiteboards, setWhiteboards] = useState<Whiteboard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const canMutateWhiteboards = userRole === "user";
 
   useEffect(() => {
     const currentUserId = userId ?? 1;
@@ -415,6 +417,10 @@ export const NewWhiteboardList = () => {
     event: MouseEvent<HTMLButtonElement>,
     id: string,
   ) => {
+    if (!canMutateWhiteboards) {
+      return;
+    }
+
     event.stopPropagation();
 
     const confirmed = window.confirm(
@@ -536,13 +542,19 @@ export const NewWhiteboardList = () => {
                   <CardActions>
                     <Badge>Live board</Badge>
                     <OpenText>Open room</OpenText>
-                    <DeleteButton
-                      type="button"
-                      onClick={(event) => handleDeleteWhiteboard(event, whiteboard.id)}
-                      disabled={deletingId === whiteboard.id}
-                    >
-                      {deletingId === whiteboard.id ? "Deleting..." : "Delete"}
-                    </DeleteButton>
+                    {canMutateWhiteboards && (
+                      <DeleteButton
+                        type="button"
+                        onClick={(event) =>
+                          handleDeleteWhiteboard(event, whiteboard.id)
+                        }
+                        disabled={deletingId === whiteboard.id}
+                      >
+                        {deletingId === whiteboard.id
+                          ? "Deleting..."
+                          : "Delete"}
+                      </DeleteButton>
+                    )}
                   </CardActions>
                 </CardBody>
               </BoardCard>

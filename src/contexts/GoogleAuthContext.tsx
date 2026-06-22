@@ -11,12 +11,14 @@ import {
   clearUserInfo,
   setUserInfo,
   UserInfo,
+  UserRole,
 } from "../features/user/userSlice";
 
 type GoogleAuthContextType = {
   isSignedIn: boolean;
   signOut: () => void;
   signIn: () => void;
+  guestSignIn: () => Promise<void>;
 };
 
 type GoogleCredentialResponse = {
@@ -26,7 +28,8 @@ type GoogleCredentialResponse = {
 type AuthResponse = {
   id: number;
   "display-name": string;
-  email: string;
+  email?: string;
+  role?: UserRole;
 };
 
 declare global {
@@ -65,7 +68,8 @@ export const GoogleAuthContextStore = ({
       const userInfo: UserInfo = {
         id: data.id,
         displayName: data["display-name"],
-        email: data.email,
+        email: data.email ?? "",
+        role: data.role ?? "user",
       };
 
       dispatch(setUserInfo(userInfo));
@@ -96,6 +100,22 @@ export const GoogleAuthContextStore = ({
     );
 
     applyAuthenticatedUser(response.data);
+  }, [applyAuthenticatedUser]);
+
+  const guestSignIn = React.useCallback(async () => {
+    const response = await axios.post<AuthResponse>(
+      `${API_SERVER_HOST}/guest-login`,
+      undefined,
+      {
+        withCredentials: true,
+      },
+    );
+
+    applyAuthenticatedUser({
+      ...response.data,
+      role: response.data.role ?? "guest",
+      email: response.data.email ?? "",
+    });
   }, [applyAuthenticatedUser]);
 
   useEffect(() => {
@@ -229,8 +249,8 @@ export const GoogleAuthContextStore = ({
   };
 
   const value = useMemo(
-    () => ({ isSignedIn, signOut, signIn }),
-    [isSignedIn, signIn, signOut],
+    () => ({ isSignedIn, signOut, signIn, guestSignIn }),
+    [guestSignIn, isSignedIn, signIn, signOut],
   );
 
   return (

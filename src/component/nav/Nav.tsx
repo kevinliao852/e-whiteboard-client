@@ -162,6 +162,17 @@ const AuthButton = styled.button`
   }
 `;
 
+const GuestButton = styled(AuthButton)`
+  background: rgba(24, 36, 61, 0.08);
+  color: #18243d;
+  box-shadow: none;
+
+  &:hover {
+    background: rgba(24, 36, 61, 0.12);
+    box-shadow: 0 12px 24px rgba(24, 36, 61, 0.12);
+  }
+`;
+
 const AuthDot = styled.span<{ $loggedIn: boolean }>`
   width: 0.55rem;
   height: 0.55rem;
@@ -181,7 +192,7 @@ export const Nav = () => {
     return null;
   }
 
-  const { isSignedIn, signOut, signIn } = googleAuth;
+  const { signOut, signIn, guestSignIn } = googleAuth;
   const isLoggedIn = authStatus === AuthStatus.Login;
   const isChecking = authStatus === AuthStatus.Checking;
 
@@ -209,13 +220,22 @@ export const Nav = () => {
             </NavItem>
           </NavItems>
 
-          <AuthButton
-            onClick={() => (isSignedIn ? signOut() : signIn())}
-            disabled={isChecking}
-          >
-            <AuthDot $loggedIn={isLoggedIn} />
-            {isChecking ? "Checking..." : isLoggedIn ? "Logout" : "Login"}
-          </AuthButton>
+          {isLoggedIn ? (
+            <>
+              <AuthButton onClick={signOut} disabled={isChecking}>
+                <AuthDot $loggedIn={isLoggedIn} />
+                {isChecking ? "Checking..." : "Logout"}
+              </AuthButton>
+            </>
+          ) : (
+            <>
+              <GuestButton onClick={guestSignIn}>Continue as guest</GuestButton>
+              <AuthButton onClick={signIn} disabled={isChecking}>
+                <AuthDot $loggedIn={isLoggedIn} />
+                {isChecking ? "Checking..." : "Login"}
+              </AuthButton>
+            </>
+          )}
         </RightSide>
       </Bar>
     </Frame>

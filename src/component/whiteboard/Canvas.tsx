@@ -10,15 +10,30 @@ type DrawingLineData = {
   end: [number, number];
 };
 
+type CursorPointData = {
+  x: number;
+  y: number;
+  active?: boolean;
+};
+
+type CursorBroadcast = CursorPointData & {
+  connection_id: string;
+  sender_id: number;
+  sender_name: string;
+};
+
 type WhiteboardPoint = DrawingLineData & {
   id: number;
   whiteboard_id: number | string;
 };
 
+type RemoteCursor = CursorBroadcast;
+
 const DEFAULT_WIDTH = 960;
 const DEFAULT_HEIGHT = 540;
 
 const CanvasFrame = styled.div`
+  position: relative;
   width: 100%;
   max-width: 100%;
   aspect-ratio: 16 / 9;
@@ -34,6 +49,43 @@ const StyledCanvas = styled.canvas`
   height: 100%;
   border: none;
   cursor: crosshair;
+  position: relative;
+  z-index: 1;
+`;
+
+const CursorLayer = styled.div`
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+`;
+
+const CursorMark = styled.div<{ $x: number; $y: number; $accent: string }>`
+  position: absolute;
+  left: ${(props) => props.$x}px;
+  top: ${(props) => props.$y}px;
+  transform: translate(8px, 8px);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(24, 36, 61, 0.88);
+  color: #fff;
+  font-size: 0.75rem;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 12px 22px rgba(24, 36, 61, 0.18);
+
+  &::before {
+    content: "";
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: ${(props) => props.$accent};
+    box-shadow: 0 0 0 0.24rem rgba(255, 255, 255, 0.12);
+    flex: 0 0 auto;
+  }
 `;
 
 const setDrawingLineData = (ws: WebSocket, data: DrawingLineData) => {
@@ -49,9 +101,25 @@ const setDrawingLineData = (ws: WebSocket, data: DrawingLineData) => {
   }
 };
 
+const setCursorData = (ws: WebSocket, data: CursorPointData) => {
+  const shouldSend = ws.readyState === ws.OPEN && data;
+
+  if (shouldSend) {
+    ws.send(
+      JSON.stringify({
+        scope: "cursor",
+        data,
+      }),
+    );
+  }
+};
+
 export const Canvas = (): JSX.Element => {
   const id = useParams<{ id?: string }>().id;
   const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [remoteCursors, setRemoteCursors] = useState<Record<string, RemoteCursor>>(
+    {},
+  );
   const { wsRef } = useWhiteboardWebSocket(id, historyLoaded);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
@@ -64,6 +132,17 @@ export const Canvas = (): JSX.Element => {
       }
 
       setDrawingLineData(wsRef.current, data);
+    },
+    [wsRef],
+  );
+
+  const sendCursorData = useCallback(
+    (data: CursorPointData) => {
+      if (!wsRef.current) {
+        return;
+      }
+
+      setCursorData(wsRef.current, data);
     },
     [wsRef],
   );
@@ -85,6 +164,7 @@ export const Canvas = (): JSX.Element => {
       strokeStyle: "#ac0000",
       canvas,
       storeCallback: sendDrawingData,
+      storeCursorCallback: sendCursorData,
     });
     controllerRef.current = controller;
 
@@ -156,6 +236,31 @@ export const Canvas = (): JSX.Element => {
     const onmessage = ((event: CustomEvent) => {
       const payload =
         typeof event.detail === "string" ? JSON.parse(event.detail) : event.detail;
+      const scope = payload?.scope;
+
+      if (scope === "cursor") {
+        const cursor = payload?.data as CursorBroadcast | undefined;
+
+        if (!cursor?.connection_id) {
+          return;
+        }
+
+        setRemoteCursors((prev) => {
+          if (cursor.active === false) {
+            const next = { ...prev };
+            delete next[cursor.connection_id];
+            return next;
+          }
+
+          return {
+            ...prev,
+            [cursor.connection_id]: cursor,
+          };
+        });
+
+        return;
+      }
+
       const { start, end } = payload?.data || {};
 
       if (!start || !end) {
@@ -175,6 +280,18 @@ export const Canvas = (): JSX.Element => {
   return (
     <CanvasFrame ref={frameRef}>
       <StyledCanvas ref={canvasRef} id="canvas" />
+      <CursorLayer>
+        {Object.values(remoteCursors).map((cursor) => (
+          <CursorMark
+            key={cursor.connection_id}
+            $x={cursor.x}
+            $y={cursor.y}
+            $accent={cursor.sender_id % 2 === 0 ? "#0f9d8a" : "#ff6b3d"}
+          >
+            {cursor.sender_name}
+          </CursorMark>
+        ))}
+      </CursorLayer>
     </CanvasFrame>
   );
 };
@@ -188,6 +305,7 @@ type CanvasMetaData = {
   strokeStyle: "#ac0000";
   canvas: HTMLCanvasElement;
   storeCallback: (data: DrawingLineData) => void;
+  storeCursorCallback: (data: CursorPointData) => void;
 };
 
 class CanvasController {
@@ -264,6 +382,22 @@ class CanvasController {
     this.isDrawing = isDrawing;
   }
 
+  updateCursor(x: number, y: number) {
+    this.canvasMetaData.storeCursorCallback({
+      x,
+      y,
+      active: true,
+    });
+  }
+
+  hideCursor(x: number, y: number) {
+    this.canvasMetaData.storeCursorCallback({
+      x,
+      y,
+      active: false,
+    });
+  }
+
   setXY(x: number, y: number) {
     this.lastX = x;
     this.lastY = y;
@@ -287,14 +421,19 @@ class CanvasEventHub {
     const mouseDownFunc = (event: MouseEvent) => {
       this.controller.setXY(event.offsetX, event.offsetY);
       this.controller.setIsDraw(true);
+      this.controller.updateCursor(event.offsetX, event.offsetY);
     };
 
     const mouseMoveFunc = (event: MouseEvent) => {
+      this.controller.updateCursor(event.offsetX, event.offsetY);
       this.controller.draw(event);
     };
 
     const mouseUpFunc = () => this.controller.setIsDraw(false);
-    const mouseOutFunc = () => this.controller.setIsDraw(false);
+    const mouseOutFunc = (event: MouseEvent) => {
+      this.controller.setIsDraw(false);
+      this.controller.hideCursor(event.offsetX, event.offsetY);
+    };
 
     this.canvas.addEventListener("mousedown", mouseDownFunc);
     this.canvas.addEventListener("mousemove", mouseMoveFunc);
